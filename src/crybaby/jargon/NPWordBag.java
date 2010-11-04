@@ -15,7 +15,7 @@ public class NPWordBag
 	Set<String> wordBag;
 	ArrayList<NPWordBag> similarBags;
 	
-	public NPWordBag(String nounPhrase, Set wordBag)
+	public NPWordBag(String nounPhrase, Set<String> wordBag)
 	{
 		this.nounPhrase = nounPhrase;
 		this.wordBag = wordBag;

@@ -1,5 +1,6 @@
 \documentclass{article}
-\title{CRYBABY -- Milestone 1 report}
+\usepackage{tocbibind}
+\title{CRYBABY -- Milestone 1 Report}
 \author{Ashwin Bhat, Joshua Cranmer, Matt Greenland}
 \begin{document}
 \maketitle
@@ -45,9 +46,10 @@ considering a reduction in scope to help deal with these issues.
 % to reduce the scope.
 
 \section{Progress}
+For the jargon/feature extraction segment of the project, we are using the Stanford Parser to extract noun phrases from reviews.  Because features of items tend to be noun phrases, we believe that this is a reasonable starting point for extraction.  This approach is detailed in \cite{opine}.  Instead of comparing noun phrases by na\" ive string equivalence, we create a bag of words set from the words in each noun phrase.  From there, we compare bags of words by set intersection size and cluster similar bags together, though we plan to improve this by using a better form of clustering, such as the method detailed in \cite{lexrank}.  To get the specific features of the reviews, we simply select every word bag cluster with an occurrence count above a threshold.  Currently this approach seems to be extracting correct features, though there are still some incorrect 
+
 % Oh man Joshua and Ashwin should describe their progress here.
-Asssuming that the best solution is the simplest solution that works, a
-small k-means++ clusterer has been written as the core of our comment
+Assuming that the best solution is the simplest solution that works, we have written a small k-means++ clusterer as the core of our comment
 summarizer. Initial results from this, though, have proved disappointing, and
 we plan to replace this with a more complex system that is hopefully more
 capable.
@@ -58,7 +60,7 @@ On the evaluation data front, we have done absolutely nothing.
 \section{Proposed Experiments}
 % I dunno what you guys are doing, but this is what I'm doing.
 
-We also plan to try replacing our dumb k-means clusterer with a more intelligent
+We also plan to try replacing our dumb $k$-means clusterer with a more intelligent
 system based on graph centrality, based on the framework presented by the
 LexRank system. Furthermore, we plan on integrating WordNet (or possibly
 SentiWordNet) into the system to provide a better method of assessing comment
@@ -68,4 +70,8 @@ relationships.
 \section{Conclusion}
 % TODO: have a better conclusion.
 We're going to, like, do less than we said we would, m'kay?
+
+\tocsection
+\bibliographystyle{plain}
+\bibliography{refs}
 \end{document}

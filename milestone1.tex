@@ -1,0 +1,71 @@
+\documentclass{article}
+\title{CRYBABY -- Milestone 1 report}
+\author{Ashwin Bhat, Joshua Cranmer, Matt Greenland}
+\begin{document}
+\maketitle
+\tableofcontents
+% Okay guys, let's work ALL TOGETHER on this!
+\section{Summary}
+CRYBABY -- which we have still yet to determine a suitable acronym for -- is a
+system which will identify and summarize common complaints about commercial
+products. If common complaints are easy to find, manufacturers could more
+easily know what to remedy in later versions of their products.
+
+\section{Goals}
+% Is a list here appropriate? I dunno.
+\begin{enumerate}
+\item Crawl the web for reviews (both professional reviews and user reviews)
+\item Extract complaints (or, more generally, expressions of strong opinion)
+from these reviews
+\item Summarize these complaints
+\item Present the results in an understandable fashion
+\item Do all of this while maintaining the illusion of competence
+\end{enumerate}
+
+\section{Related Research}
+% Oh man Joshua and Ashwin should put some research here if they have any.
+In the area of comment summarization, we plan to heavily draw from the
+architecture of LexRank, the system presented in ``LexRank: Graph-based
+Lexical Centrality as Salience in Text Summarization''.
+
+\section{Architecture}
+Our original architecture proposal had a four-part architecture:
+\begin{enumerate}
+\item Crawl the web for reviews, and classify them by type of review
+(blog post, professional review, store review, etc.)
+\item Identify product-specific jargon and its connotations
+\item Using these, extract comments from the reviews
+\item Summarize these comments and present the summary as output
+\end{enumerate}
+
+So far, we feel our basic architecture is sound, although we have run into a
+few issues with actually getting reviews and extracting jargon, and we are
+considering a reduction in scope to help deal with these issues.
+% It would be nice to get some more detail about the problems, and how we plan
+% to reduce the scope.
+
+\section{Progress}
+% Oh man Joshua and Ashwin should describe their progress here.
+Asssuming that the best solution is the simplest solution that works, a
+small k-means++ clusterer has been written as the core of our comment
+summarizer. Initial results from this, though, have proved disappointing, and
+we plan to replace this with a more complex system that is hopefully more
+capable.
+
+% TODO: fix this.
+On the evaluation data front, we have done absolutely nothing.
+
+\section{Proposed Experiments}
+% I dunno what you guys are doing, but this is what I'm doing.
+
+We also plan to try replacing our dumb k-means clusterer with a more intelligent
+system based on graph centrality, based on the framework presented by the
+LexRank system. Furthermore, we plan on integrating WordNet (or possibly
+SentiWordNet) into the system to provide a better method of assessing comment
+similarity by considering synonym/antonym pairs, and hierarchical concept
+relationships.
+
+\section{Conclusion}
+% TODO: have a better conclusion.
+We're going to, like, do less than we said we would, m'kay?
+\end{document}

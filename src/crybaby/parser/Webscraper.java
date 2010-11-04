@@ -12,6 +12,11 @@ public class Webscraper {
 		page = new HtmlDocumentBuilder().parse(uri);
 	}
 	
+	public String dumpText() {
+		Element body = (Element)page.getElementsByTagName("body").item(0);
+		return body.getTextContent();
+	}
+	
 	public List<String> getClasses() throws Exception {
 		Set<String> classes = new HashSet<String>();
 		XPath query = XPathFactory.newInstance().newXPath();
@@ -35,8 +40,7 @@ public class Webscraper {
 
 	public static void main(String[] args) throws Exception{
 		Webscraper scraper = new Webscraper(args[0]);
-		System.out.println(scraper.getClasses());
-		System.out.println(scraper.getIDs());
+		System.out.println(scraper.dumpText());
 	}
 
 }

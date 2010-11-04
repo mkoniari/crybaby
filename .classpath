@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="htmlparser-1.2.1.jar"/>
+	<classpathentry kind="lib" path="stanford-parser.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/usr/local/stanford-parser/current/stanford-parser.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

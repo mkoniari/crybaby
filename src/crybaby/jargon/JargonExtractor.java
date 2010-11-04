@@ -1,21 +1,7 @@
 package crybaby.jargon;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
 import edu.stanford.nlp.objectbank.TokenizerFactory;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
@@ -39,7 +25,6 @@ public class JargonExtractor
 		List<String> stopWordList = Arrays.asList(stopWordArray);
 		Set stopWords = new HashSet(stopWordList);
 		NPWordBag newBag;
-//		ArrayList<NPWordBag> bags = new ArrayList<NPWordBag>();
 		String label;
 		Map<NPWordBag, Integer> wordBags;
 		
@@ -61,12 +46,11 @@ public class JargonExtractor
 			{
 				if(paragraph.length() < 2)
 					continue;
-//				System.out.println("\nSentence: " + paragraph);
 				sentences = paragraph.split("(\\.|\\?|!) ");
 				for(int i = 0; i < sentences.length; ++i)
 				{
 					sentences[i] = sentences[i] + ".";
-					System.out.println(sentences[i]);
+//					System.out.println(sentences[i]);
 					List sentenceTokens = tf.getTokenizer(new StringReader(sentences[i])).tokenize(); 
 					lp.parse(sentenceTokens); // parse the tokens
 					parseTree = lp.getBestParse(); // get the best parse tree
@@ -74,10 +58,8 @@ public class JargonExtractor
 
 					for(Tree node : nodes)
 					{
-						//					System.out.println(node.label().value() + " " + (node.label().value().equals("NP")));
 						if(node.label().value().equals("NP"))
 						{
-//							System.out.print("\nNP ");
 							nounPhrase = "";
 							Set<String> bag = new HashSet<String>();
 							for(Tree leaf : node.getLeaves())
@@ -87,6 +69,8 @@ public class JargonExtractor
 								if(!stopWords.contains(label))
 								{
 									bag.add(label);
+									/* special case, we should either have a bunch of these in a 	*
+									 * separate file or come up with a general rule 				*/
 									if(label.equalsIgnoreCase("wifi") || label.equalsIgnoreCase("wi-fi"))
 									{
 										bag.add("Wi-Fi");
@@ -122,7 +106,6 @@ public class JargonExtractor
 							}
 							if(!added)
 								wordBags.put(newBag, 1);
-//								bags.add(new NPWordBag(nounPhrase, bag));
 							if(nounPhrases.containsKey(nounPhrase))
 								nounPhrases.put(nounPhrase, nounPhrases.get(nounPhrase) + 1);
 							else
@@ -135,19 +118,11 @@ public class JargonExtractor
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("done!!!");
 		for(NPWordBag bag : wordBags.keySet())
 		{
 			if(wordBags.get(bag) > 3)
 				System.out.println(wordBags.get(bag) + " : " + bag);
 		}
-//		Iterator<String> iter = nounPhrases.keySet().iterator();
-//		while(iter.hasNext())
-//		{
-//			String s = iter.next();
-//			if(nounPhrases.get(s) > 3)
-//				System.out.println(nounPhrases.get(s) + " : " + s);
-//		}
 	}
 
 }

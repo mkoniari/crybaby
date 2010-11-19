@@ -1,5 +1,7 @@
 package crybaby.summarize;
 
+import crybaby.common.LexRanker;
+import crybaby.common.LexRankResults;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -8,47 +10,71 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class CommentSummarizer {
-    List<String> comments;
-    List<BagOfWords> bagsOfWords;
+    List<String> commentTexts;
 
     public CommentSummarizer(List<String> comments) {
-        this.comments = comments;
+        commentTexts = comments;
+    }
+
+    public static String[] tokens(String comment) {
+        return comment.replaceAll("--", " ")
+            .replaceAll("[^a-zA-Z0-9_'\\s]", "")
+            .toLowerCase()
+            .split("\\s+");
+    }
+
+    protected Map<String, Double> idf(List<String> words) {
+        Map<String, Double> idf = new HashMap<String, Double>();
+        Map<String, Integer> df = new HashMap<String, Integer>();
+        for (String word: words) {
+            df.put(word, 0);
+        }
+        for (String comment: commentTexts) {
+            Set<String> present = new HashSet<String>();
+            for (String word: tokens(comment)) {
+                present.add(word);
+            }
+            for (String word: present) {
+                df.put(word, df.get(word) + 1);
+            }
+        }
+        for (String word: words) {
+            idf.put(word, Math.log(commentTexts.size() * 1.0 / df.get(word)));
+        }
+        return idf;
+    }
+
+    public List<String> summarize() {
         Set<String> wordSet = new HashSet<String>();
-        for (String comment: comments) {
-            for (String word: comment.toLowerCase().split("\\s+")) {
+        for (String s: commentTexts) {
+            for (String word: tokens(s)) {
                 wordSet.add(word);
             }
         }
-        List<String> words = new ArrayList<String>(wordSet.size());
-        for (String word: wordSet) {
-            words.add(word);
+        List<String> words = new ArrayList<String>();
+        for (String s: wordSet) {
+            words.add(s);
         }
-        Map<String, Integer> wordPositions = new HashMap<String, Integer>();
-        for (int i = 0; i < words.size(); ++i) {
-            wordPositions.put(words.get(i), i);
+        Map<String, Double> idf = idf(words);
+        List<Comment> comments = new ArrayList<Comment>(commentTexts.size());
+        for (String s: commentTexts) {
+            comments.add(new Comment(s, idf, words));
         }
-        bagsOfWords = new ArrayList<BagOfWords>();
-        for (String c: comments) {
-            bagsOfWords.add(new BagOfWords(wordPositions, words.size(), c));
-        }
-    }
+        LexRankResults<Comment> results = LexRanker.rank(comments, 0.1, false);
 
-    public List<String> summarize(int k) {
-        KMeansClusterer kmeans = new KMeansClusterer(bagsOfWords, k);
-        kmeans.runToConvergence();
-        List<BagOfWords> means = kmeans.means();
-        List<String> results = new ArrayList<String>(means.size());
-        for (int i = 0; i < means.size(); ++i) {
-            int best = 0;
-            BagOfWords mean = means.get(i);
-            for (int j = 0; j < bagsOfWords.size(); ++j) {
-                if (mean.squared_distance(bagsOfWords.get(j)) <
-                    mean.squared_distance(bagsOfWords.get(best))) {
-                    best = j;
+        List<String> finalResults = new ArrayList<String>();
+        for (Comment c: results.rankedResults) {
+            // Only return results that are local maxima
+            boolean max = true;
+            for (Comment neighbor: results.neighbors.get(c)) {
+                if (results.scores.get(neighbor) > results.scores.get(c)) {
+                    max = false;
                 }
             }
-            results.add(comments.get(best));
+            if (max) {
+                finalResults.add(c.commentText);
+            }
         }
-        return results;
+        return finalResults;
     }
 }

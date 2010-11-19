@@ -1,5 +1,8 @@
 package crybaby.summarize;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -8,27 +11,21 @@ import java.util.ArrayList;
 public class SummarizerTest {
     public static void main(String[] args) {
         List<String> comments = new ArrayList<String>();
-        comments.add("The headphone cord is too short");
-        comments.add("I thought the cord was too short");
-        comments.add("The cord wasn't long enough to reach my ears");
-        comments.add("I would've preferred a longer cord");
-
-        comments.add("The sound quality is great");
-        comments.add("I found the sound to be good overall");
-        comments.add("The sound was heavy on bass but good otherwise");
-        comments.add("No complaints about the sound quality");
-
-        comments.add("One earphone broke one month after I bought it");
-        comments.add("The left earphone didn't last too long");
-        comments.add("The reliability is bad, it broke after only one month");
-        comments.add("It broke just one month after I bought it");
+        String line = "";
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(args[0]));
+            while ((line = br.readLine()) != null) {
+                comments.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
 
         CommentSummarizer summarizer = new CommentSummarizer(comments);
-        for (int i = 1; i < 5; ++i) {
-            for (String s: summarizer.summarize(i)) {
-                System.out.println(s);
-            }
-            System.out.println();
-        }   
+        List<String> results = summarizer.summarize();
+        for (String s: results) {
+            System.out.println(s+"\n");
+        }
     }
 }

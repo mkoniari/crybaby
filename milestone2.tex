@@ -1,0 +1,27 @@
+\documentclass{article}
+\usepackage{tocbibind, url}
+\usepackage{amsmath,amssymb,amsopn,amsthm}
+\title{CRYBABY --- Milestone 2 Report}
+\author{Ashwin Bhat, Joshua Cranmer, Matt Greenland}
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{Progress} % (fold)
+
+\subsection{Jargon Identification} % (fold)
+
+In the jargon identification segment, we have made some changes to the way terms are learned.  We are now using a function to indicate similarity between bags of words:\begin{align*}
+	similarity(A, B) &= \frac{|A\cap B|}{|A\cup B|}.
+\end{align*}This way, the similarity is always a number between 0 and 1.  We are currently using this similarity measure, with a threshold, to find all similarities between noun phrase bags.  This way, terms like ``battery'' and ``battery life'' can be grouped together, making the program more likely to learn that battery life is an important feature to identify.
+
+One issue that we have noticed is dealing with different versions of the same word (i.e., words with the same stem).  We plan to integrate the Porter Stemmer \cite{porter} into our system to recognize common stems.
+
+% subsection Jargon Identification (end)
+
+% section Progress (end)
+
+\tocsection
+\bibliographystyle{acm}
+\bibliography{refs}
+\end{document}

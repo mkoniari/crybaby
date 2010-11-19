@@ -1,55 +1,78 @@
 package crybaby.jargon;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-/*
- * This is a somewhat naive way of doing this.
- * Really, each bag should be a vertex in a graph, 
- * and similarity between vertices should cause edges 
- * have smaller weights (or larger weights).
- */
 
-public class NPWordBag
+import java.util.Set;
+
+import crybaby.common.Similar;
+
+public class NPWordBag implements Similar<NPWordBag>, Comparable<NPWordBag>
 {
-	String nounPhrase;
-	Set<String> wordBag;
-	ArrayList<NPWordBag> similarBags;
-	
+	private String nounPhrase;
+	private int similars;
+	private Set<String> wordBag;
+
 	public NPWordBag(String nounPhrase, Set<String> wordBag)
 	{
 		this.nounPhrase = nounPhrase;
 		this.wordBag = wordBag;
-		this.similarBags = new ArrayList<NPWordBag>();
-	}
-
-	public boolean addSimilarBag(NPWordBag newBag)
-	{
-		if(intersection(this.wordBag, newBag.wordBag).size() > 0)
-		{
-			this.similarBags.add(newBag);
-			return true;
-		}
-		return false;
+		this.similars = 0;
 	}
 	
 	// because Java doesn't have intersection built into the Set class...
-	private Set<String> intersection(Set<String> setA, Set<String> setB)
+	private int intersectionCardinality(Set<String> setA, Set<String> setB)
 	{
-		Set<String> temp = new HashSet<String>();
+		int intersectionCardinality;
+		
+		intersectionCardinality = 0;
 		for (String x : setA)
 			if (setB.contains(x))
 			{
-				temp.add(x);
-				return temp;
+				++intersectionCardinality;
 			}
-		return temp;
+		return intersectionCardinality;
 	}
 	
 	public String toString()
 	{
-		String rep = this.nounPhrase + "\n";
-		for(NPWordBag b : this.similarBags)
-			rep += b.nounPhrase + ", ";
-		return rep.substring(0, rep.length() - 2) + "\n";
+		return this.nounPhrase;
+	}
+	
+	public String getNounPhrase() {
+		return nounPhrase;
+	}
+
+	public void setNounPhrase(String nounPhrase) {
+		this.nounPhrase = nounPhrase;
+	}
+
+	public Set<String> getWordBag() {
+		return wordBag;
+	}
+
+	public void setWordBag(Set<String> wordBag) {
+		this.wordBag = wordBag;
+	}
+
+	@Override
+	public double similarity(NPWordBag other) {
+		return (double) this.intersectionCardinality(this.getWordBag(), other.getWordBag()) / 
+		(this.getWordBag().size() + other.getWordBag().size());
+	}
+	
+	public void addSimilar()
+	{
+		++this.similars;
+	}
+	
+	public int getSimilars()
+	{
+		return this.similars;
+	}
+
+	@Override
+	public int compareTo(NPWordBag arg0) {
+		if(this.getSimilars() > arg0.getSimilars())
+			return -1;
+		else
+			return 1;
 	}
 }

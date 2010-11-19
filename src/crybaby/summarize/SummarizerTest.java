@@ -6,8 +6,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 
-// Not, like, an actual for serious test; just something to see if it actually
-// works at all.
+/**
+ * A command line utility which reads in a file full of comments, one per line,
+ * and runs comment summarization on them. Currently just dumps out whichever
+ * comments it comes back with.
+ */
 public class SummarizerTest {
     public static void main(String[] args) {
         List<String> comments = new ArrayList<String>();

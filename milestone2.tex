@@ -9,6 +9,27 @@
 
 \section{Progress} % (fold)
 
+\subsection{Webscraping}
+
+In terms of grabbing the data from the web, this section is more or less
+complete. While data has yet to be generalized, code now exists to go all the
+way from a search query to extraction of parse trees for sentences.
+
+Extraction of text from the web proceeds by removing large swathes of the
+webpage's source HTML that could screw up the text dumper (such as
+\texttt{<script>} tags). Then the scraper attempts to identify certain common
+characterists indicating main content of the webpage or user comments on the
+webpage, and limits its output to that portion of the webpage. If it cannot
+find such tags, to be on the conservative side, it uses the entire page to at
+least provide some measure of text.
+
+After extracting the text content, the text is split into sentences. The current
+method of sentence splitting is simplistic, looking for punctation followed by
+whitespace or for a large amount of whitespace (an artifact of how the text of
+the webpage is extracted which proves to be a reasonable heuristic for breaks
+suggested by page layout). These sentences are then filtered by removing very
+short sentences.
+
 \subsection{Jargon Identification} % (fold)
 
 In the jargon identification segment, we have made some changes to the way terms are learned.  We are now using a function to indicate similarity between bags of words:\begin{align*}

@@ -7,9 +7,9 @@ import javax.xml.xpath.*;
 import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
 import org.w3c.dom.*;
 
-import javax.script.*;
+/*import javax.script.*;
 
-import sun.org.mozilla.javascript.ScriptableObject;
+import sun.org.mozilla.javascript.ScriptableObject;*/
 
 public class Webscraper {
 	private Document page;
@@ -20,7 +20,7 @@ public class Webscraper {
 	}
 	
 	// TODO: try using the code from http://lab.arc90.com/experiments/readability/js/readability.js
-	private static class ScriptableNode extends ScriptableObject {
+	/*private static class ScriptableNode extends ScriptableObject {
 		private Node self;
 		
 		public ScriptableNode(Node repr) {
@@ -35,7 +35,7 @@ public class Webscraper {
 	}
 	public void filterWithReadability() {
 		ScriptEngine engine = new ScriptEngineManager().getEngineByMimeType("text/javascript");
-	}
+	}*/
 	
 	public void filterPage() {
 		// The following is a list of tags to remove

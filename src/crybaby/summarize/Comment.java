@@ -2,7 +2,6 @@ package crybaby.summarize;
 
 import crybaby.common.Similar;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 
 public class Comment implements Similar<Comment> {

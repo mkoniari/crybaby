@@ -2,7 +2,6 @@ package crybaby.common;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import java.util.ArrayList;
 
@@ -83,7 +82,7 @@ public class LexRanker {
             data = d;
             score = s;
         }
-        public int compareTo(RankPair other) {
+        public int compareTo(RankPair<T> other) {
             double diff = score - other.score;
             if (diff > 0.000001) {
                 return 1;

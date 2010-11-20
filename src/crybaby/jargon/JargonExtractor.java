@@ -3,8 +3,6 @@ package crybaby.jargon;
 import java.io.*;
 import java.util.*;
 
-import crybaby.common.LexRankResults;
-import crybaby.common.LexRanker;
 import crybaby.parser.ParseSentence;
 
 import edu.stanford.nlp.trees.Tree;
@@ -31,7 +29,6 @@ public class JargonExtractor
 		try {
 			stopWordBuffer = new BufferedReader(new FileReader("/Users/ashwin/code/projects/crybaby/stopwords.txt"));
 		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
@@ -39,7 +36,6 @@ public class JargonExtractor
 			while((stopWord = stopWordBuffer.readLine()) != null)
 				stopWords.add(stopWord);
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
@@ -47,7 +43,6 @@ public class JargonExtractor
 		try {
 			fis = new FileInputStream(args[0]);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 		DataInputStream dis = new DataInputStream(fis);
@@ -120,7 +115,6 @@ public class JargonExtractor
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		System.out.println("Word bags generated.");

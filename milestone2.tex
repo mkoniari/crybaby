@@ -51,14 +51,56 @@ One issue that we have noticed is dealing with different versions of the same wo
 
 % subsection Jargon Identification (end)
 
-\subsection{Cool Stuff} % (fold)
+\subsection{Summarization} % (fold)
 
+Since the last milestone, we've replaced the k-means clustering
+implementation with a new one based on the LexRank algorithm.
+This involves creating a similarity graph between input comments;
+we use the standard idf-modified cosine similarity metric. The
+graph edges are then binarized via a similarity threshold. Finally,
+we compute a salience for each comment which roughly corresponds
+to the probability of being on that comment after an infinitely
+long random walk on the similarity graph.
 
+The primary modification we've made to the standard LexRank
+algorithm is in the area of clustering. Standard LexRank assumes
+that the input sentences have already been clustered; LexRank then
+runs on each cluster to find the best representative sentence. We
+instead opt to run LexRank against every comment. We then simulate
+clustering by only outputting the local maxima on the graph; that
+is, we iterate down the list of comments (sorted by salience) and
+only return those whose salience is greater than that of all their
+neighbors.
+
+Anecdotally, the performance of this summarization architecture
+performs much better than the old k-means system: for one, it is no
+longer dependent on getting a good random initialization. On two
+test cases, comments about Windows 7 and the iPhone 4, we return
+good representative sentences for almost every common issue; the
+only notable exception was that no comments regaring the iPhone's
+Retina Display were returned.
+
+While performance seems very good already, we do have some tweaks
+in mind to make it even better. Recall is very high, but precision
+can sometimes be low, with extraneous results towards the end
+of our output. We plan to experiment with thresholding our output
+based on LexRank score to solve this. In addition, we also plan to
+tweak the parameters we use for LexRank to see if we get a better
+ranking. Finally, we also plan to hook our system up to WordNet,
+and use a word similarity measure to hopefully get more accurate
+similarity graphs.
 
 % subsection Cool Stuff (end)
 
 \subsection{Data Gathering} % (fold)
 
+Data gathering has gone slower than expected, largely in part
+because data gathering is much more labor-intensive than previously
+estimated. We only have 3 of our planned 10-15 cases finished.
+
+However, the quality of our evaluation data is good, and since
+the data we gather is fairly dense, we can still evaluate our code
+somewhat comprehensively with our incomplete data set.
 
 
 % subsection Data Gathering (end)

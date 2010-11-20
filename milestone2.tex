@@ -18,17 +18,28 @@ way from a search query to extraction of parse trees for sentences.
 Extraction of text from the web proceeds by removing large swathes of the
 webpage's source HTML that could screw up the text dumper (such as
 \texttt{<script>} tags). Then the scraper attempts to identify certain common
-characterists indicating main content of the webpage or user comments on the
+characteristics indicating main content of the webpage or user comments on the
 webpage, and limits its output to that portion of the webpage. If it cannot
 find such tags, to be on the conservative side, it uses the entire page to at
 least provide some measure of text.
 
 After extracting the text content, the text is split into sentences. The current
-method of sentence splitting is simplistic, looking for punctation followed by
+method of sentence splitting is simplistic, looking for punctuation followed by
 whitespace or for a large amount of whitespace (an artifact of how the text of
 the webpage is extracted which proves to be a reasonable heuristic for breaks
 suggested by page layout). These sentences are then filtered by removing very
 short sentences.
+
+The final step is to produce parse trees of the sentences. This is done using
+the Stanford PCFG parser. After producing parse trees for all sentences, any
+sentence which lacks a verb is discarded, which does a good job of also removing
+extraneous content not handled by the original parser. At this point, the
+webpage is now ready to be handed off to other components.
+
+As potential improvements to our code, we could use freely available components
+to provide more accurate web parsing code to increase our coverage. We could
+also modify the text extractor to output the text in a format that is more
+amenable to determination of sentence boundaries.
 
 \subsection{Jargon Identification} % (fold)
 

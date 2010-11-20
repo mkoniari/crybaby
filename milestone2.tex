@@ -49,11 +49,29 @@ the page would avoid the speed penalty brought about by syntactic parsing.
 
 \subsection{Jargon Identification} % (fold)
 
-In the jargon identification segment, we have made some changes to the way terms are learned.  We are now using a function to indicate similarity between bags of words:\begin{align*}
+In the jargon identification segment, we have made some changes to the way terms
+are learned.  We are now using a function to indicate similarity between bags of
+words:\begin{align*}
 	similarity(A, B) &= \frac{|A\cap B|}{|A\cup B|}.
-\end{align*}This way, the similarity is always a number between 0 and 1.  We are currently using this similarity measure, with a threshold, to find all similarities between noun phrase bags.  This way, terms like ``battery'' and ``battery life'' can be grouped together, making the program more likely to learn that battery life is an important feature to identify.  Non-extensive testing seems to indicate that this approach is working well, though some extra tweaks may be necessary to eliminate some unnecessary words besides stop words that are already being omitted.
+\end{align*}This way, the similarity is always a number between 0 and 1.  We are
+currently using this similarity measure, with a threshold, to find all similarities
+between noun phrase bags.  This way, terms like ``battery'' and ``battery life''
+can be grouped together, making the program more likely to learn that battery life
+is an important feature to identify.  Non-extensive testing seems to indicate that
+this approach is working well, though some extra tweaks may be necessary to
+eliminate some unnecessary words besides stop words that are already being omitted.
 
-One issue that we have noticed is dealing with different versions of the same word (i.e., words with the same stem).  We plan to integrate the Porter Stemmer \cite{porter} into our system to recognize common stems.
+We have come up with some other ways of finding jargon words that may give better
+results than just doing noun phrase similarity.  For example, many reviews have 
+sections for each aspect of a product.  These sections are often titled with the
+aspect, like ``sound quality'' or ``user interface.''  Since section titles are
+often on their own lines, we could extract them by looking for small amounts of
+text separated by blank lines before and after.  This would not be a difficult 
+enhancement to add, and we plan on adding it very soon.
+
+One issue that we have noticed is dealing with different versions of the same word
+(i.e., words with the same stem).  We plan to integrate the Porter Stemmer
+\cite{porter} into our system to recognize common stems.
 
 % subsection Jargon Identification (end)
 
@@ -83,7 +101,7 @@ performs much better than the old k-means system: for one, it is no
 longer dependent on getting a good random initialization. On two
 test cases, comments about Windows 7 and the iPhone 4, we return
 good representative sentences for almost every common issue; the
-only notable exception was that no comments regaring the iPhone's
+only notable exception was that no comments regarding the iPhone's
 Retina Display were returned.
 
 While performance seems very good already, we do have some tweaks

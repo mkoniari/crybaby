@@ -7,6 +7,7 @@ import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.process.WordTokenFactory;
 
 public class Parser {
-	public static LexicalizedParser parser = new LexicalizedParser("../../../englishPCFG.ser.gz");
+	// Singleton design pattern FTW
+	public static LexicalizedParser parser = new LexicalizedParser("englishPCFG.ser.gz");
 	public static TokenizerFactory<? extends HasWord> tf = PTBTokenizer.factory(false, new WordTokenFactory());
 }

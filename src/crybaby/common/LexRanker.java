@@ -2,7 +2,6 @@ package crybaby.common;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import java.util.ArrayList;
 
@@ -22,7 +21,7 @@ public class LexRanker {
      * @param data the data to rank.
      * @param similarityThreshold how similar two items must be to be considered
      * "connected". The LexRank paper suggests a value of 0.1.
-     * @param continuous whether or not to use a sontinuous version of the
+     * @param continuous whether or not to use a continuous version of the
      * LexRank algorithm, If set to false, all similarity links above the
      * similarity threshold will be considered equal; otherwise, the similarity
      * scores are used. The paper authors note that non-continuous LexRank
@@ -83,7 +82,7 @@ public class LexRanker {
             data = d;
             score = s;
         }
-        public int compareTo(RankPair other) {
+        public int compareTo(RankPair<T> other) {
             double diff = score - other.score;
             if (diff > 0.000001) {
                 return 1;
@@ -113,7 +112,7 @@ public class LexRanker {
 
     /**
      * Given a similarity matrix, computes the transition probability for a
-     * random walker on a graph to go from any one node to any othert node,
+     * random walker on a graph to go from any one node to any other node,
      * where all edges come from sufficiently high similarities between nodes.
      */
     private static double[][]

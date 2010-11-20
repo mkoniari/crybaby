@@ -1,10 +1,15 @@
 package crybaby.parser;
 
 import java.util.*;
+import java.util.regex.*;
 import javax.xml.xpath.*;
 
 import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
 import org.w3c.dom.*;
+
+/*import javax.script.*;
+
+import sun.org.mozilla.javascript.ScriptableObject;*/
 
 public class Webscraper {
 	private Document page;
@@ -13,6 +18,24 @@ public class Webscraper {
 		page = new HtmlDocumentBuilder().parse(uri);
 		xpath = XPathFactory.newInstance().newXPath();
 	}
+	
+	// TODO: try using the code from http://lab.arc90.com/experiments/readability/js/readability.js
+	/*private static class ScriptableNode extends ScriptableObject {
+		private Node self;
+		
+		public ScriptableNode(Node repr) {
+			this.self = repr;
+			Class<? extends Node> clazz = repr.getClass();
+		}
+
+		@Override
+		public String getClassName() {
+			return "You suck";
+		}
+	}
+	public void filterWithReadability() {
+		ScriptEngine engine = new ScriptEngineManager().getEngineByMimeType("text/javascript");
+	}*/
 	
 	public void filterPage() {
 		// The following is a list of tags to remove
@@ -110,13 +133,24 @@ public class Webscraper {
 		return new LinkedList<String>(classes);
 	}
 
+	public List<String> getSentences() {
+		String text = dumpText();
+		Pattern p = Pattern.compile("([.?!])([ \n\r\t]+|$)|[ \n\r\t]{4,}", Pattern.MULTILINE);
+	
+		List<String> sentences = new ArrayList<String>();
+		Matcher m = p.matcher(text);
+		int last = 0;
+		while (m.find()) {
+			String s = text.substring(last, m.start() + 1).trim();
+			if (s.length() > 0)
+				sentences.add(s);
+			last = m.end();
+		}
+		return sentences;
+	}
 	public static void main(String[] args) throws Exception{
 		Webscraper scraper = new Webscraper(args[0]);
 		scraper.filterPage();
-		System.out.println(scraper.dumpText());
+		System.out.println(scraper.getSentences());
 	}
 }
-/**
-javascript:(function(){
-  readConvertLinksToFootnotes=false;readStyle='style-newspaper';readSize='size-medium';readMargin='margin-wide';_readability_script=document.createElement('script');_readability_script.type='text/javascript';_readability_script.src='http://lab.arc90.com/experiments/readability/js/readability.js?x='+(Math.random());document.documentElement.appendChild(_readability_script);_readability_css=document.createElement('link');_readability_css.rel='stylesheet';_readability_css.href='http://lab.arc90.com/experiments/readability/css/readability.css';_readability_css.type='text/css';_readability_css.media='all';document.documentElement.appendChild(_readability_css);_readability_print_css=document.createElement('link');_readability_print_css.rel='stylesheet';_readability_print_css.href='http://lab.arc90.com/experiments/readability/css/readability-print.css';_readability_print_css.media='print';_readability_print_css.type='text/css';document.getElementsByTagName('head')[0].appendChild(_readability_print_css);})();
-*/

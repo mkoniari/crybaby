@@ -15,21 +15,20 @@ public class JargonExtractor
 		String[] sentences;
 		String paragraph;
 		String nounPhrase;
-		boolean added;
 		BufferedReader stopWordBuffer;
 		Set<String> stopWords = null;
 		NPWordBag newBag;
 		String label;
-		Map<NPWordBag, Integer> wordBags;
+		List<NPWordBag> wordBags;
 		ParseSentence ps;
 		String stopWord;
+		Set<Integer> removed;
 		
 		stopWordBuffer = null;
 		stopWords = new HashSet<String>();
 		try {
-			stopWordBuffer = new BufferedReader(new FileReader("../../../stopwords.txt"));
+			stopWordBuffer = new BufferedReader(new FileReader("/Users/ashwin/code/projects/crybaby/stopwords.txt"));
 		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
@@ -37,7 +36,6 @@ public class JargonExtractor
 			while((stopWord = stopWordBuffer.readLine()) != null)
 				stopWords.add(stopWord);
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
@@ -45,13 +43,12 @@ public class JargonExtractor
 		try {
 			fis = new FileInputStream(args[0]);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 		DataInputStream dis = new DataInputStream(fis);
 		BufferedReader br = new BufferedReader(new InputStreamReader(dis));
 		nounPhrases = new Hashtable<String, Integer>();
-		wordBags = new Hashtable<NPWordBag, Integer>();
+		wordBags = new ArrayList<NPWordBag>();
 		
 		try {
 			while((paragraph = br.readLine()) != null)
@@ -62,7 +59,7 @@ public class JargonExtractor
 				for(int i = 0; i < sentences.length; ++i)
 				{
 					sentences[i] = sentences[i] + ".";
-//					System.out.println(sentences[i]);
+					System.out.println(sentences[i]);
 					ps = new ParseSentence(sentences[i]);
 					List<Tree> nodes = ps.getParseTree().preOrderNodeList();
 
@@ -75,9 +72,13 @@ public class JargonExtractor
 							for(Tree leaf : node.getLeaves())
 							{
 								label = leaf.label().toString();
+								if(label.equals(","))
+									
 								nounPhrase += label + " ";
+								System.out.println(label);
 								if(!stopWords.contains(label))
 								{
+//									System.out.println(label);
 									bag.add(label);
 									/* special case, we should either have a bunch of these in a 	*
 									 * separate file or come up with a general rule 				*/
@@ -103,19 +104,8 @@ public class JargonExtractor
 							nounPhrase = nounPhrase.substring(0, nounPhrase.length() - 1);
 							if(stopWords.contains(nounPhrase))
 								continue;
-							added = false;
 							newBag = new NPWordBag(nounPhrase, bag);
-							for(NPWordBag b : wordBags.keySet())
-							{
-								if(b.addSimilarBag(newBag))
-								{
-									added = true;
-									wordBags.put(b, wordBags.get(b) + 1);
-									break;
-								}
-							}
-							if(!added)
-								wordBags.put(newBag, 1);
+							wordBags.add(newBag);
 							if(nounPhrases.containsKey(nounPhrase))
 								nounPhrases.put(nounPhrase, nounPhrases.get(nounPhrase) + 1);
 							else
@@ -125,14 +115,34 @@ public class JargonExtractor
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		for(NPWordBag bag : wordBags.keySet())
+		System.out.println("Word bags generated.");
+		
+		removed = new HashSet<Integer>();
+		
+		for(int i = 0; i < wordBags.size(); ++i)
 		{
-			if(wordBags.get(bag) > 3)
-				System.out.println(wordBags.get(bag) + " : " + bag);
+			for(int j = i+1; j < wordBags.size(); ++j)
+			{
+				if(!removed.contains(j) && wordBags.get(i).similarity(wordBags.get(j)) > 0)
+				{
+					removed.add(j);
+					wordBags.get(i).addSimilar();
+				}
+			}
 		}
+		Collections.sort(wordBags);
+		for(NPWordBag wb : wordBags)
+		{
+			System.out.println(wb.getSimilars() + " " + wb.getNounPhrase());
+		}
+		
+//		for(NPWordBag bag : wordBags.keySet())
+//		{
+//			if(wordBags.get(bag) > 3)
+//				System.out.println(wordBags.get(bag) + " : " + bag);
+//		}
 	}
 
 }

@@ -30,5 +30,7 @@ public class ParseSentence {
 		return parseTree;
 	}
 	
-	
+	public String toString() {
+		return parseTree.toString();
+	}
 }

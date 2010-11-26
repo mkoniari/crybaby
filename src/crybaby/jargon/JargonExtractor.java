@@ -15,19 +15,25 @@ public class JargonExtractor
 		String[] sentences;
 		String paragraph;
 		String nounPhrase;
-		BufferedReader stopWordBuffer;
-		Set<String> stopWords = null;
+		BufferedReader stopWordBuffer, synonymBuffer;
+		Set<String> stopWords = null, synonymWords = null;
 		NPWordBag newBag;
 		String label;
 		List<NPWordBag> wordBags;
+		List<Set<String>> synonyms = null;
 		ParseSentence ps;
-		String stopWord;
+		String stopWord, synonymLine;
 		Set<Integer> removed;
+		boolean commaNP;
 		
 		stopWordBuffer = null;
+		synonymBuffer = null;
 		stopWords = new HashSet<String>();
+		
+		synonyms = new ArrayList<Set<String>>();
 		try {
 			stopWordBuffer = new BufferedReader(new FileReader("/Users/ashwin/code/projects/crybaby/stopwords.txt"));
+			synonymBuffer = new BufferedReader(new FileReader("/Users/ashwin/code/projects/crybaby/synonyms.txt"));
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
@@ -38,7 +44,18 @@ public class JargonExtractor
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		
+		try {
+			while((synonymLine = synonymBuffer.readLine()) != null)
+			{
+				synonymWords = new HashSet<String>();
+				synonymWords.addAll(Arrays.asList(synonymLine.split(",")));
+				synonyms.add(synonymWords);
+			}
+				
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		FileInputStream fis = null;
 		try {
 			fis = new FileInputStream(args[0]);
@@ -50,6 +67,7 @@ public class JargonExtractor
 		nounPhrases = new Hashtable<String, Integer>();
 		wordBags = new ArrayList<NPWordBag>();
 		
+		
 		try {
 			while((paragraph = br.readLine()) != null)
 			{
@@ -60,34 +78,46 @@ public class JargonExtractor
 				{
 					sentences[i] = sentences[i] + ".";
 					System.out.println(sentences[i]);
+					commaNP = false;
 					ps = new ParseSentence(sentences[i]);
 					List<Tree> nodes = ps.getParseTree().preOrderNodeList();
 
 					for(Tree node : nodes)
 					{
+						if(node.size() > 3)
+							continue;
+//						System.out.println(node.label());
 						if(node.label().value().equals("NP"))
 						{
 							nounPhrase = "";
+//							System.out.println(node);
 							Set<String> bag = new HashSet<String>();
 							for(Tree leaf : node.getLeaves())
 							{
 								label = leaf.label().toString();
 								if(label.equals(","))
-									
+								{
+									commaNP = true;
+									System.out.println("COMMA NP");
+									System.out.println(nounPhrase + label);
+									break;
+								}
 								nounPhrase += label + " ";
-								System.out.println(label);
+//								System.out.println(nounPhrase);
 								if(!stopWords.contains(label))
 								{
+									label = label.toLowerCase();
 //									System.out.println(label);
 									bag.add(label);
 									/* special case, we should either have a bunch of these in a 	*
 									 * separate file or come up with a general rule 				*/
-									if(label.equalsIgnoreCase("wifi") || label.equalsIgnoreCase("wi-fi"))
+									for(Set<String> synSet : synonyms)
 									{
-										bag.add("Wi-Fi");
-										bag.add("wi-fi");
-										bag.add("wifi");
-										bag.add("WiFi");
+										if(synSet.contains(label))
+										{
+											bag.addAll(synSet);
+											break;
+										}
 									}
 									if(label.charAt(label.length() - 1) != 's')
 									{
@@ -100,7 +130,8 @@ public class JargonExtractor
 									}
 								}
 							}
-							
+							if(commaNP)
+								continue;
 							nounPhrase = nounPhrase.substring(0, nounPhrase.length() - 1);
 							if(stopWords.contains(nounPhrase))
 								continue;
@@ -132,6 +163,7 @@ public class JargonExtractor
 				}
 			}
 		}
+		wordBags.removeAll(removed);
 		Collections.sort(wordBags);
 		for(NPWordBag wb : wordBags)
 		{

@@ -84,7 +84,7 @@ public class JargonExtractor
 
 					for(Tree node : nodes)
 					{
-						if(node.size() > 3)
+						if(node.size() > 5)
 							continue;
 //						System.out.println(node.label());
 						if(node.label().value().equals("NP"))

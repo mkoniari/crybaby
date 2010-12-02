@@ -2,6 +2,8 @@ package crybaby.parser;
 
 import java.util.*;
 
+import crybaby.summarize.CommentSummarizer;
+
 import edu.stanford.nlp.ling.*;
 
 public class CommentExtractor {
@@ -25,10 +27,21 @@ public class CommentExtractor {
 		}
 	}
 	
+	public List<String> getText() {
+		List<String> ret = new ArrayList<String>(sentences.size());
+		for (ParseSentence sentence : sentences)
+			ret.add(sentence.getSentence());
+		return ret;
+	}
 	public static void main(String[] args) throws Exception {
 		Webscraper scraper = new Webscraper(args[0]);
 		scraper.filterPage();
 		CommentExtractor extractor = new CommentExtractor(scraper);
-		System.out.println(extractor.sentences);
+		CommentSummarizer summary = new CommentSummarizer(extractor.getText());
+		List<String> results = summary.summarize();
+		System.out.println("Top results:");
+		for (String s : results) {
+			System.out.println(s);
+		}
 	}
 }

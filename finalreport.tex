@@ -1,0 +1,101 @@
+\documentclass{article}
+\usepackage{tocbibind, url}
+\usepackage{amsmath,amssymb,amsopn,amsthm}
+\title{CRYBABY --- Final Report}
+\author{Ashwin Bhat, Joshua Cranmer, Matt Greenland}
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{Introduction} % (fold)
+
+If you're a consumer who is thinking about a new purchase, it can be hard to 
+discern how your prospective purchase actually performs given the massive 
+amount of reviews on it. Likewise, if you're the person making the product, 
+you want to know what issues people are having with it so you can fix them 
+(the issues, not the people).  CRYBABY is a system that attempts to solve 
+both of these problems by finding common criticisms and complaints about 
+products.
+
+% section Introduction (end)
+
+\section{What It Does} % (fold)
+
+Our system, in its ideal form, involves a user entering the name of a product 
+into a text field.  CRYBABY then fetches reviews from several websites for 
+the product and parses them.  It then finds the keywords and jargon for the 
+product and extracts comments and complaints about the keyword terms from the 
+reviews.  Lastly, it summarizes the complaints and displays the aggregated 
+opinions for the user to see.
+
+% section What It Does (end)
+
+\section{How It Works} % (fold)
+
+\subsection{Web Scraping} % (fold)
+
+
+
+% subsection Web Scraping (end)
+
+\subsection{Jargon Identification} % (fold)
+
+For the jargon identification segment, we used the Stanford Parser to extract noun phrases from reviews.  Because product features tend to be noun phrases, this turned out to be a very useful way of narrowing down the data.  This approach is detailed in \cite{opine}.  Instead of comparing noun phrases by na\"ive string equivalence, we created a bag-of-words set from the words in each noun phrase.  From there, we compared these sets using a similarity function:\begin{align*}
+	\text{similarity}(A,B) &= \frac{|A\cap B|}{|A\cup B|}.
+\end{align*}  This metric proved to be very effective, since it works well with small and large sets alike.
+
+The jargon identification algorithm parses the reviews and compares all of the noun phrase sets to one another.  It groups similar sets together and ranks groups of similar sets by quantity.  That is, the top ranked noun phrases are the ones that appear most frequently in reviews.  The algorithm then eliminates all noun phrases appearing less than a predefined threshold number of times.
+
+This approach had two major issues.  The first was that the most common noun phrases tend to be pronouns, since reviewers tend to write ``I'' and ``you'' very often in their reviews.  To overcome this, we added a list of stop words to omit from the jargon identification entirely.  By doing this, most of the unneeded noun phrases were eliminated right away.  The second issue with this approach was the problem of long noun phrases.  Some reviews tend to several key features in one sentence, as in ``I liked the screen, the apps, and the call quality.''  The approach described above would consider the noun phrase ``the screen, the apps, and the call quality'' to be a very important feature, since it has similarity with every noun phrase involving any of the three features in the list.  Overcoming this issue required examining the parse tree for noun phrases of this sort: \begin{verbatim}
+	(ROOT
+	  (S
+	    (NP (PRP I))
+	    (VP (VBD liked)
+	      (NP
+	        (NP (DT the) (NN screen))
+	        (, ,)
+	        (NP (DT the) (NNS apps))
+	        (, ,)
+	        (CC and)
+	        (NP (DT the) (NN call) (NN quality))))
+	    (. .)))
+\end{verbatim} The key aspect of this parse tree is that the subtree containing the list of features contains over 20 nodes.  Almost always, a key feature of a product will not be more than two or three words, which would typically mean no more than five nodes in the noun phrase subtree.  We modified the jargon identification algorithm to only consider noun phrases with at most five nodes in the tree, and this tweak eliminated all of the long noun phrase issues.
+
+% subsection Jargon Identification (end)
+
+\subsection{Complaint Extraction} % (fold)
+
+
+
+% subsection Complaint Extraction (end)
+
+\subsection{Summarization} % (fold)
+
+
+
+% subsection Summarization (end)
+
+% section How It Works (end)
+
+\section{Testing} % (fold)
+
+
+
+% section Testing (end)
+
+\section{Results} % (fold)
+
+
+
+% section Results (end)
+
+\section{Conclusion} % (fold)
+
+
+
+% section Conclusion (end)
+
+\tocsection
+\bibliographystyle{acm}
+\bibliography{refs}
+\end{document}

@@ -33,6 +33,10 @@ public class CommentExtractor {
 			ret.add(sentence.getSentence());
 		return ret;
 	}
+	
+	public List<ParseSentence> getSentences() {
+		return Collections.unmodifiableList(sentences);
+	}
 	public static void main(String[] args) throws Exception {
 		Webscraper scraper = new Webscraper(args[0]);
 		scraper.filterPage();

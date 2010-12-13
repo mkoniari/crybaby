@@ -6,9 +6,9 @@ import java.util.List;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.trees.Tree;
 
-public class ParseSentence {
-	private String sentence;
-	private Tree parseTree;
+public final class ParseSentence {
+	private final String sentence;
+	private final Tree parseTree;
 
 	/**
 	 * Just pass in the sentence that you want parsed.  Then use getSentence() and getParseTree() to your heart's content.

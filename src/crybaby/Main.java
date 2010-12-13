@@ -14,6 +14,7 @@ import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The main class for crybaby
@@ -68,7 +69,9 @@ public final class Main {
 			JargonExtractor extractor = new JargonExtractor();
 			while (!finished) {
 				try {
-					ParseSentence p = sentences.take();
+					ParseSentence p = sentences.poll(1, TimeUnit.SECONDS);
+					if (p == null)
+						continue;
 					extractor.addParseSentence(p);
 				} catch (InterruptedException e) {} 
 			}
@@ -128,19 +131,21 @@ public final class Main {
 		List<String> phrases = new LinkedList<String>(pages);
 		List<String> strings = new LinkedList<String>();
 		for (String s : results) {
-			boolean good = false;
+			/*boolean good = false;
 			for (String phrase : phrases)
 				if (s.contains(phrase)) {
 					good = true;
 					break;
 				}
-			if (good)
+			if (good)*/
 				strings.add(s);
 		}
+		System.out.println("Output strings: " + strings);
+		System.out.println("Jargon phrases: " + phrases);
 		CommentSummarizer summarizer = new CommentSummarizer(strings);
 		List<String> finalResults = summarizer.summarize();
 		System.out.println("Final summary strings:");
 		for (String s : finalResults)
-			System.out.println(s);
+			System.out.println(s);		
 	}
 }

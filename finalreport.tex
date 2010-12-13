@@ -34,6 +34,17 @@ opinions for the user to see.
 
 \subsection{Web Scraping} % (fold)
 
+Web scraping is performed in two stages. First, the page is turned into an HTML
+tree via the Validator.nu HTML parser (a parser found in a common browser
+implementation). After that, the tree is filtered to remove unwanted portions
+of the page. The resulting tree is then serialized into a text string which is
+fed to later components.
+
+The filtering is currently performed by attempting to find a main content node
+and using that as the sole data to be output. In addition, certain known bad
+nodes (such as script elements) are removed from the tree. Plans had been made
+to leverage an existing API that performs a more thorough cleansing of the page,
+but these were dropped due to time constraints.
 
 
 % subsection Web Scraping (end)
@@ -65,6 +76,15 @@ This approach had two major issues.  The first was that the most common noun phr
 
 \subsection{Complaint Extraction} % (fold)
 
+Given the text extracted from the web page, a list of sentences is produced by
+splitting the output text at significant punctation marks (namely, periods,
+exclamation marks, and question marks) followed by whitespace.
+
+To aid in removal of advertising phrases, every sentence not having a verb
+phrase is excluded from further analysis. This process currently requires the
+use of a deep syntactic parse tree (the same one that is fed into the jargon
+extractor, in fact); it is hoped that a more thorough cleanser could eliminate
+the need for this time-consuming task.
 
 
 % subsection Complaint Extraction (end)

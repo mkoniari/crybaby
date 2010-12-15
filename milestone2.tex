@@ -1,0 +1,137 @@
+\documentclass{article}
+\usepackage{tocbibind, url}
+\usepackage{amsmath,amssymb,amsopn,amsthm}
+\title{CRYBABY --- Milestone 2 Report}
+\author{Ashwin Bhat, Joshua Cranmer, Matt Greenland}
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{Progress} % (fold)
+
+\subsection{Webscraping}
+
+In terms of grabbing the data from the web, this section is more or less
+complete. While data has yet to be generalized, code now exists to go all the
+way from a search query to extraction of parse trees for sentences.
+
+Extraction of text from the web proceeds by removing large swathes of the
+webpage's source HTML that could screw up the text dumper (such as
+\texttt{<script>} tags). Then the scraper attempts to identify certain common
+characteristics indicating main content of the webpage or user comments on the
+webpage, and limits its output to that portion of the webpage. If it cannot
+find such tags, to be on the conservative side, it uses the entire page to at
+least provide some measure of text.
+
+After extracting the text content, the text is split into sentences. The current
+method of sentence splitting is simplistic, looking for punctuation followed by
+whitespace or for a large amount of whitespace (an artifact of how the text of
+the webpage is extracted which proves to be a reasonable heuristic for breaks
+suggested by page layout). These sentences are then filtered by removing very
+short sentences.
+
+The final step is to produce parse trees of the sentences. This is done using
+the Stanford PCFG parser. After producing parse trees for all sentences, any
+sentence which lacks a verb is discarded, which does a good job of also removing
+extraneous content not handled by the original parser. At this point, the
+webpage is now ready to be handed off to other components.
+
+As potential improvements to our code, we could use freely available components
+to provide more accurate web parsing code to increase our coverage. We could
+also modify the text extractor to output the text in a format that is more
+amenable to determination of sentence boundaries.
+
+Another problem that has been identified is the speed of the sentence parser.
+Currently, it takes a few minutes to download the webpage, turn it into readable
+text, and then parse it, most of it in the first and last step. While the time
+it takes to download the page is unavoidable, it seems that better filtering of
+the page would avoid the speed penalty brought about by syntactic parsing.
+
+\subsection{Jargon Identification} % (fold)
+
+In the jargon identification segment, we have made some changes to the way terms
+are learned.  We are now using a function to indicate similarity between bags of
+words:\begin{align*}
+	similarity(A, B) &= \frac{|A\cap B|}{|A\cup B|}.
+\end{align*}This way, the similarity is always a number between 0 and 1.  We are
+currently using this similarity measure, with a threshold, to find all similarities
+between noun phrase bags.  This way, terms like ``battery'' and ``battery life''
+can be grouped together, making the program more likely to learn that battery life
+is an important feature to identify.  Non-extensive testing seems to indicate that
+this approach is working well, though some extra tweaks may be necessary to
+eliminate some unnecessary words besides stop words that are already being omitted.
+
+We have come up with some other ways of finding jargon words that may give better
+results than just doing noun phrase similarity.  For example, many reviews have 
+sections for each aspect of a product.  These sections are often titled with the
+aspect, like ``sound quality'' or ``user interface.''  Since section titles are
+often on their own lines, we could extract them by looking for small amounts of
+text separated by blank lines before and after.  This would not be a difficult 
+enhancement to add, and we plan on adding it very soon.
+
+One issue that we have noticed is dealing with different versions of the same word
+(i.e., words with the same stem).  We plan to integrate the Porter Stemmer
+\cite{porter} into our system to recognize common stems.
+
+% subsection Jargon Identification (end)
+
+\subsection{Summarization} % (fold)
+
+Since the last milestone, we've replaced the k-means clustering
+implementation with a new one based on the LexRank algorithm.
+This involves creating a similarity graph between input comments;
+we use the standard idf-modified cosine similarity metric. The
+graph edges are then binarized via a similarity threshold. Finally,
+we compute a salience for each comment which roughly corresponds
+to the probability of being on that comment after an infinitely
+long random walk on the similarity graph.
+
+The primary modification we've made to the standard LexRank
+algorithm is in the area of clustering. Standard LexRank assumes
+that the input sentences have already been clustered; LexRank then
+runs on each cluster to find the best representative sentence. We
+instead opt to run LexRank against every comment. We then simulate
+clustering by only outputting the local maxima on the graph; that
+is, we iterate down the list of comments (sorted by salience) and
+only return those whose salience is greater than that of all their
+neighbors.
+
+Anecdotally, the performance of this summarization architecture
+performs much better than the old k-means system: for one, it is no
+longer dependent on getting a good random initialization. On two
+test cases, comments about Windows 7 and the iPhone 4, we return
+good representative sentences for almost every common issue; the
+only notable exception was that no comments regarding the iPhone's
+Retina Display were returned.
+
+While performance seems very good already, we do have some tweaks
+in mind to make it even better. Recall is very high, but precision
+can sometimes be low, with extraneous results towards the end
+of our output. We plan to experiment with thresholding our output
+based on LexRank score to solve this. In addition, we also plan to
+tweak the parameters we use for LexRank to see if we get a better
+ranking. Finally, we also plan to hook our system up to WordNet,
+and use a word similarity measure to hopefully get more accurate
+similarity graphs.
+
+% subsection Cool Stuff (end)
+
+\subsection{Data Gathering} % (fold)
+
+Data gathering has gone slower than expected, largely in part
+because data gathering is much more labor-intensive than previously
+estimated. We only have 3 of our planned 10-15 cases finished.
+
+However, the quality of our evaluation data is good, and since
+the data we gather is fairly dense, we can still evaluate our code
+somewhat comprehensively with our incomplete data set.
+
+
+% subsection Data Gathering (end)
+
+% section Progress (end)
+
+\tocsection
+\bibliographystyle{acm}
+\bibliography{refs}
+\end{document}

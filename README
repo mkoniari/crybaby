@@ -1,1 +1,32 @@
-Don't read me!
+INSTRUCTIONS
+
+First, build the classes:
+
+  ./build.sh
+
+Then, you have the option of running the full pipeline. This requires about
+4 GB of RAM (seriously) and lots of free time. To run it:
+
+  ./run-full.sh <name of product>
+
+e.g.:
+
+  ./run-full.sh iphone 4
+
+Or, you can run the version that uses manually selected review text. For this,
+you'll need about 2GB of RAM and maybe half an hour of time:
+
+  ./run-noscraping.sh <data file>
+
+e.g.
+
+  ./run-noscraping.sh data/iphone4.reviewtexts
+  ./run-noscraping.sh data/starcraft2.reviewtexts
+  ./run-noscraping.sh data/windows7.reviewtexts
+
+Or you can run the version that just does summarization. This version is much
+faster.
+
+  ./run-onlysummarize.sh data/iphone4.reviewtexts
+  ./run-onlysummarize.sh data/starcraft2.reviewtexts
+  ./run-onlysummarize.sh data/windows7.reviewtexts

@@ -30,3 +30,9 @@ faster.
   ./run-onlysummarize.sh data/iphone4.reviewtexts
   ./run-onlysummarize.sh data/starcraft2.reviewtexts
   ./run-onlysummarize.sh data/windows7.reviewtexts
+
+We've also included some scripts to run a couple of the individual component
+tests:
+
+  ./jargon.sh data/iphone4.reviewtexts
+  ./summarize.sh data/iphone4.comments  

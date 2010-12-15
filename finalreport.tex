@@ -57,7 +57,7 @@ For the jargon identification segment, we used the Stanford Parser to extract no
 
 The jargon identification algorithm parses the reviews and compares all of the noun phrase sets to one another.  It groups similar sets together and ranks groups of similar sets by quantity.  That is, the top ranked noun phrases are the ones that appear most frequently in reviews.  The algorithm then eliminates all noun phrases appearing less than a predefined threshold number of times.
 
-This approach had two major issues.  The first was that the most common noun phrases tend to be pronouns, since reviewers tend to write ``I'' and ``you'' very often in their reviews.  To overcome this, we added a list of stop words to omit from the jargon identification entirely.  By doing this, most of the unneeded noun phrases were eliminated right away.  The second issue with this approach was the problem of long noun phrases.  Some reviews tend to several key features in one sentence, as in ``I liked the screen, the apps, and the call quality.''  The approach described above would consider the noun phrase ``the screen, the apps, and the call quality'' to be a very important feature, since it has similarity with every noun phrase involving any of the three features in the list.  Overcoming this issue required examining the parse tree for noun phrases of this sort: \begin{verbatim}
+This approach had three major issues.  The first was that the most common noun phrases tend to be pronouns, since reviewers tend to write ``I'' and ``you'' very often in their reviews.  To overcome this, we added a list of stop words to omit from the jargon identification entirely.  By doing this, most of the unneeded noun phrases were eliminated right away.  The second issue with this approach was the problem of long noun phrases.  Some reviews tend to several key features in one sentence, as in ``I liked the screen, the apps, and the call quality.''  The approach described above would consider the noun phrase ``the screen, the apps, and the call quality'' to be a very important feature, since it has similarity with every noun phrase involving any of the three features in the list.  Overcoming this issue required examining the parse tree for noun phrases of this sort: \begin{verbatim}
 	(ROOT
 	  (S
 	    (NP (PRP I))
@@ -70,7 +70,7 @@ This approach had two major issues.  The first was that the most common noun phr
 	        (CC and)
 	        (NP (DT the) (NN call) (NN quality))))
 	    (. .)))
-\end{verbatim} The important thing to note in this parse tree is that the subtree containing the list of features contains over 20 nodes.  Almost always, a key feature of a product will not be more than two or three words, which would typically mean no more than five nodes in the noun phrase subtree.  We modified the jargon identification algorithm to only consider noun phrases with at most five nodes in the tree, and this tweak eliminated all of the long noun phrase issues.
+\end{verbatim} The important thing to note in this parse tree is that the subtree containing the list of features contains over 20 nodes.  Almost always, a key feature of a product will not be more than two or three words, which would typically mean no more than five nodes in the noun phrase subtree.  We modified the jargon identification algorithm to only consider noun phrases with at most five nodes in the tree, and this tweak eliminated all of the long noun phrase issues.  The third issue is the problem of synonyms.  With the iPhone 4, for example, reviewers use the terms ``apps'' and ``applications'' interchangeably, but this approach would consider them separate features.  We do not currently have an elegant workaround for this issue, and are instead using a hard-coded list of synonymous terms.
 
 % subsection Jargon Identification (end)
 
@@ -113,7 +113,34 @@ Our data for testing CRYBABY was a large quantity of reviews for three products:
 
 \section{Results} % (fold)
 
+\subsection{Jargon Identification Results} % (fold)
 
+The jargon identification segment of the program works quite well.  The results for the iPhone 4 are shown below:\\\begin{center}\begin{tabular}{cccc}
+	Apple&This phone&my iPhone&4\\
+	Apps&3G&Video playback&call\\
+	Talk time&Digital Camera&FaceTime&device\\
+	Documentation&five emails&the day&Battery\\
+	Photos&problems&Display&iPhone users\\
+	Screen sensitivity&a feature&People&AT\&T
+\end{tabular}
+\end{center}
+Overall, these results are good.  There are clearly still some issues with not acknowledging that ``phone,'' ``iPhone,'' and ``4'' are referring to the same thing.  Also, phrases like ``five emails'' are included rather than simply ``email'' because the algorithm still has trouble determining which way of stating a noun phrase is the preferred way.  Lastly, terms like ``the day'' and ``people'' are not useful extractions at all.
+The results for Windows 7 are shown below:\\\begin{center}\begin{tabular}{ccc}
+	Windows 7&Windows Vista&Microsoft\\
+	apps&HomeGroups&Windows XP\\
+	an OS&File Management&users\\
+	Device Management&its Taskbar&System Tray\\
+	compelling features&A version&software installers\\
+	higher driver&the icons&your computer\\
+	a time&UAC&new PCs\\
+	hardware&the network&Libraries\\
+	the screen&support&your desktop\\
+	a bit&Home Premium&one-click access
+\end{tabular}
+\end{center}
+These results are also very promising.  Almost all of the terms are important details about Windows 7, if one considers comparisons to Windows XP and Windows Vista to be important details in a review.
+
+% subsection Jargon Identification Results (end)
 
 \section{Future Work}
 

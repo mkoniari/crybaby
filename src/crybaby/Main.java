@@ -108,7 +108,7 @@ public final class Main {
 		for (String query : queries) {
 			try {
 				query = query.replace("%s", product);
-				resultPages.addAll(searcher.searchResults(query, 100));
+				resultPages.addAll(searcher.searchResults(query, 50));
 			} catch (Throwable e) {
 				System.err.println("Error searching for " + query + ":");
 				e.printStackTrace(System.err);

@@ -1,16 +1,16 @@
 package crybaby.parser;
 
-import java.io.FileReader;
+/*import java.io.FileReader;
 import java.lang.reflect.*;
-import java.nio.ByteBuffer;
+import java.nio.ByteBuffer;*/
 import java.util.*;
 import java.util.regex.*;
-import javax.script.*;
+//import javax.script.*;
 import javax.xml.xpath.*;
 import org.w3c.dom.*;
 
 import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
-import sun.org.mozilla.javascript.ScriptableObject;
+//import sun.org.mozilla.javascript.ScriptableObject;
 
 public class Webscraper {
 	private String uri;
@@ -27,7 +27,7 @@ public class Webscraper {
 	 * Magic classes to hook the DOM into Rhino.
 	 * Do not try to understand this.
 	 */
-	@SuppressWarnings("serial")
+/*	@SuppressWarnings("serial")
 	private static class ScriptableNode extends ScriptableObject implements InvocationHandler {
 		private Object self;
 		static ClassLoader dcl = new DynamicClassLoader();
@@ -207,7 +207,7 @@ public class Webscraper {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
+	}*/
 	
 	public void filterPage() {
 		// The following is a list of tags to remove
@@ -323,7 +323,7 @@ public class Webscraper {
 	public static void main(String[] args) throws Exception{
 		Webscraper scraper = new Webscraper(args[0]);
 		//scraper.filterPage();
-		scraper.filterWithReadability();
+		//scraper.filterWithReadability();
 		System.out.println(scraper.dumpText());
 	}
 }

@@ -55,6 +55,8 @@ public class JargonExtractor
 //					System.out.println(nounPhrase);
 					if(!stopWords.contains(label))
 					{
+						if (label.length() == 0)
+							continue;
 						label = label.toLowerCase();
 //						System.out.println(label);
 						bag.add(label);

@@ -70,7 +70,7 @@ This approach had two major issues.  The first was that the most common noun phr
 	        (CC and)
 	        (NP (DT the) (NN call) (NN quality))))
 	    (. .)))
-\end{verbatim} The key aspect of this parse tree is that the subtree containing the list of features contains over 20 nodes.  Almost always, a key feature of a product will not be more than two or three words, which would typically mean no more than five nodes in the noun phrase subtree.  We modified the jargon identification algorithm to only consider noun phrases with at most five nodes in the tree, and this tweak eliminated all of the long noun phrase issues.
+\end{verbatim} The important thing to note in this parse tree is that the subtree containing the list of features contains over 20 nodes.  Almost always, a key feature of a product will not be more than two or three words, which would typically mean no more than five nodes in the noun phrase subtree.  We modified the jargon identification algorithm to only consider noun phrases with at most five nodes in the tree, and this tweak eliminated all of the long noun phrase issues.
 
 % subsection Jargon Identification (end)
 
@@ -99,7 +99,15 @@ the need for this time-consuming task.
 
 \section{Data Gathering} % (fold)
 
-Our data for testing CRYBABY was a large quantity of reviews for three products:  the iPhone 4, Windows 7, and StarCraft II.  Some of these reviews were from professional sources, such as Ars Technica and Engadget, while others were from Amazon.  We manually made a list of all of the sentences containing opinions about a product's key feature.  To do this, we also had to make our own list of key features for each product.
+Our data for testing CRYBABY was a large quantity of reviews for three products:  the iPhone 4, Windows 7, and StarCraft II.  Some of these reviews were from professional sources, such as Ars Technica and Engadget, while others were from Amazon.  We manually made a list of all of the sentences containing opinions about a product's key feature.  To do this, we also had to make our own list of key features for each product.  For example, with the iPhone 4, the key features we listed were:\\\begin{center}\begin{tabular}{ccc}
+	AT\&T&Apple&apps\\
+	Facetime&retina display&physical design\\
+	dropped call&call quality&image quality\\
+	audio quality&system performance&battery life\\
+	folders&reception&signal\\
+	camera&antenna&bumper\\
+	death grip&tethering&
+\end{tabular}\end{center}
 
 % section Testing (end)
 

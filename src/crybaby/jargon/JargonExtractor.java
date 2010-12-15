@@ -47,8 +47,8 @@ public class JargonExtractor
 					if(label.equals(","))
 					{
 						commaNP = true;
-						System.out.println("COMMA NP");
-						System.out.println(nounPhrase + label);
+//						System.out.println("COMMA NP");
+//						System.out.println(nounPhrase + label);
 						break;
 					}
 					nounPhrase += label + " ";

@@ -83,7 +83,7 @@ public final class Main {
 			System.out.println("Finding jargon terms...");
 			extractor.removeSimilarity();
 			for (NPWordBag bag : extractor.getWordBags()) {
-				if (bag.getSimilars() < 5)
+				if (bag.getSimilars() < 15)
 					break;
 				jargon.add(bag.getNounPhrase());
 			}

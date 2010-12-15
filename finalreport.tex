@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{tocbibind, url}
+\usepackage{url}
 \usepackage{amsmath,amssymb,amsopn,amsthm}
 \title{CRYBABY --- Final Report}
 \author{Ashwin Bhat, Joshua Cranmer, Matt Greenland}
@@ -57,7 +57,8 @@ For the jargon identification segment, we used the Stanford Parser to extract no
 
 The jargon identification algorithm parses the reviews and compares all of the noun phrase sets to one another.  It groups similar sets together and ranks groups of similar sets by quantity.  That is, the top ranked noun phrases are the ones that appear most frequently in reviews.  The algorithm then eliminates all noun phrases appearing less than a predefined threshold number of times.
 
-This approach had three major issues.  The first was that the most common noun phrases tend to be pronouns, since reviewers tend to write ``I'' and ``you'' very often in their reviews.  To overcome this, we added a list of stop words to omit from the jargon identification entirely.  By doing this, most of the unneeded noun phrases were eliminated right away.  The second issue with this approach was the problem of long noun phrases.  Some reviews tend to several key features in one sentence, as in ``I liked the screen, the apps, and the call quality.''  The approach described above would consider the noun phrase ``the screen, the apps, and the call quality'' to be a very important feature, since it has similarity with every noun phrase involving any of the three features in the list.  Overcoming this issue required examining the parse tree for noun phrases of this sort: \begin{verbatim}
+This approach had three major issues.  The first was that the most common noun phrases tend to be pronouns, since reviewers tend to write ``I'' and ``you'' very often in their reviews.  To overcome this, we added a list of stop words to omit from the jargon identification entirely.  By doing this, most of the unneeded noun phrases were eliminated right away.  The second issue with this approach was the problem of long noun phrases.  Some reviews tend to several key features in one sentence, as in ``I liked the screen, the apps, and the call quality.''  The approach described above would consider the noun phrase ``the screen, the apps, and the call quality'' to be a very important feature, since it has similarity with every noun phrase involving any of the three features in the list.  Overcoming this issue required examining the parse tree for noun phrases of this sort:
+\begin{verbatim}
 	(ROOT
 	  (S
 	    (NP (PRP I))
@@ -70,7 +71,8 @@ This approach had three major issues.  The first was that the most common noun p
 	        (CC and)
 	        (NP (DT the) (NN call) (NN quality))))
 	    (. .)))
-\end{verbatim} The important thing to note in this parse tree is that the subtree containing the list of features contains over 20 nodes.  Almost always, a key feature of a product will not be more than two or three words, which would typically mean no more than five nodes in the noun phrase subtree.  We modified the jargon identification algorithm to only consider noun phrases with at most five nodes in the tree, and this tweak eliminated all of the long noun phrase issues.  The third issue is the problem of synonyms.  With the iPhone 4, for example, reviewers use the terms ``apps'' and ``applications'' interchangeably, but this approach would consider them separate features.  We do not currently have an elegant workaround for this issue, and are instead using a hard-coded list of synonymous terms.
+\end{verbatim}
+The important thing to note in this parse tree is that the subtree containing the list of features contains over 20 nodes.  Almost always, a key feature of a product will not be more than two or three words, which would typically mean no more than five nodes in the noun phrase subtree.  We modified the jargon identification algorithm to only consider noun phrases with at most five nodes in the tree, and this tweak eliminated all of the long noun phrase issues.  The third issue is the problem of synonyms.  With the iPhone 4, for example, reviewers use the terms ``apps'' and ``applications'' interchangeably, but this approach would consider them separate features.  We do not currently have an elegant workaround for this issue, and are instead using a hard-coded list of synonymous terms.
 
 % subsection Jargon Identification (end)
 
@@ -91,7 +93,48 @@ the need for this time-consuming task.
 
 \subsection{Summarization} % (fold)
 
+Initially, we tried to do comment summarization using a k-means clustering
+algorithm. This involed transforming each comment into a bag-of-words feature
+vector and alternating the estimation of each cluster center with the
+estimation of which cluster each comment belonged to. This approach, as
+expected, did not work so well. We replaced it with a much more sophisticated
+system.
 
+Our summarization implentation is based on the LexRank algorithm.
+This involves creating a similarity graph between input comments;
+we use the standard idf-modified cosine similarity metric. The
+graph edges are then binarized via a similarity threshold. Finally,
+we compute a salience for each comment which roughly corresponds
+to the probability of being on that comment after an infinitely
+long random walk on the similarity graph.
+
+The primary modification we've made to the standard LexRank
+algorithm is in the area of clustering. Standard LexRank assumes
+that the input sentences have already been clustered; LexRank then
+runs on each cluster to find the best representative sentence. We
+instead opt to run LexRank against every comment. We then simulate
+clustering by only outputting the local maxima on the graph; that
+is, we iterate down the list of comments (sorted by salience) and
+only return those whose salience is greater than that of all their
+neighbors.
+
+Anecdotally, the performance of this summarization architecture
+performs much better than the old k-means system: for one, it is no
+longer dependent on getting a good random initialization. On two
+test cases, comments about Windows 7 and the iPhone 4, we return
+good representative sentences for almost every common issue; the
+only notable exception was that no comments regarding the iPhone's
+Retina Display were returned.
+
+While performance seems very good already, we do have some tweaks
+in mind to make it even better. Recall is very high, but precision
+can sometimes be low, with extraneous results towards the end
+of our output. We plan to experiment with thresholding our output
+based on LexRank score to solve this. In addition, we also plan to
+tweak the parameters we use for LexRank to see if we get a better
+ranking. Finally, we also plan to hook our system up to WordNet,
+and use a word similarity measure to hopefully get more accurate
+similarity graphs.
 
 % subsection Summarization (end)
 
@@ -112,6 +155,8 @@ Our data for testing CRYBABY was a large quantity of reviews for three products:
 % section Testing (end)
 
 \section{Results} % (fold)
+
+\subsection{Comment Extraction Results}
 
 \subsection{Jargon Identification Results} % (fold)
 
@@ -142,6 +187,158 @@ These results are also very promising.  Almost all of the terms are important de
 
 % subsection Jargon Identification Results (end)
 
+\subsection{Comment Summarization Results}
+
+By itself, comment summarization seems to work pretty well. For the
+hand-selected comments, here are the top 10 summaries for each product:
+\begin{description}
+\item[iPhone 4]
+\begin{enumerate}
+\item This phone feels like it has been carved out of a solid block of glass. I love the feel of it in my hand.
+\item The A4 processor should also be faster than its predecessor (the phone does feel faster) but speed was usually not a real issue on the 3GS, so the difference is not eye-popping.
+\item This would make things even better, but at this point, it is fair to say that the iPhone is the king of the hill in terms of battery life.
+\item When you do manage to place a call, there's an impressive improvement in audio quality.
+\item the iPhone photo gallery remains of of the best photo gallery, along with the Zune HD photo gallery.
+\item Apple's dual-mic noise suppression led to a background-free talk experience, even by a busy road.
+\item So Apple's using a newer backside-illuminated sensor that's more sensitive to light in addition to upping those megapixels -- and we must say, pictures on the iPhone 4 look stunning.
+\item There's less time spent closing and opening the apps as their "current state" will simply be saved, to be quickly re-activated later - this is much better than a complete shut down and relaunch.
+\item The iPhone 4 boots in boots in 27 seconds.
+\item Overall, the email experience is very good (except for the lower-speed typing), and the ability to arrange emails per thread can be useful if a conversation is spread out overtime.
+\end{enumerate}
+\item[Windows 7]
+\begin{enumerate}
+\item Having used the new taskbar for approaching a year now, I think that overall, it's an improvement on its predecessor. The ability to pin and rearrange icons means that my core applications are always in the same place, which is certainly welcome. It also scales better for situations when I have many applications and windows open; by using large icons instead of textual buttons, I can have more applications running before things become unintelligible or (worse) I have to scroll.
+\item One of the welcome enhancements Microsoft made was start-up time. The shutdown time has been improved as well. Also, in my non-benchmarked experience, Windows 7 has been at least as fast as XP if not faster.
+\item Unfortunately, Windows 7's Explorer also retains bad things, like the monumentally stupid Search window. Searching in Windows 7, as with Vista, is fast and easy. It's just that anything other than keyword search is a nightmare, because there's no kind of search builder. The search interface is just a text box to type in.
+\item This all results in a poor, inconsistent experience. Sure, a platform with the long history of Windows is always going to have applications that stick with legacy practices and fail to conform to new guidelines. That's one of the costs of progress; old software looks old, and doesn't keep up with the new look and feel. But it shouldn't be an issue within the OS itself.
+\item In short, think of Windows 7 as Windows Vista done right.
+\item Windows 7 makes connecting two or more Windows 7 systems together easy, using HomeGroup. This enables easy sharing of files and devices.
+\item All of the drivers for my computer peripherals were loaded correctly.
+\item In Windows 7, Microsoft tamped down the annoyance factor of UAC.
+\item my wallpapers are now a slideshow that can be set to change every few minutes (I'm not stuck with the same picture)
+\item joining wireless networks is much easier
+\end{enumerate}
+\item[StarCraft II]
+\begin{enumerate}
+\item It's a great game.
+\item StarCraft II is a competitive game of the highest order, and as such, it offers a fully featured online experience that is as thrilling as it is grueling.
+\item But these achievements are woven through every aspect of the game, from the campaign to the multiplayer, and in turn, these achievements are broadcast to your in-game friends on the all-important Battle.net online service that serves as Starcraft II's primary interface.
+\item In StarCraft II, you will frequently start to  wish Blizzard had done this or that, then see that there is a way to do exactly what you hoped for.
+\item TIRED Contrived dialogue, cliched story.
+\item The sweep of the camera, the tiny, detailed debris flying through the air - it all sells the story despite the hackneyed dialogue.
+\item StarCraft II is practically essential.
+\item Playing it, repelling wave upon wave of Zerg forces in the singleplayer levels, bullying your way into the league rankings in the relentless multiplayer leagues, or just hanging about in the luxurious campaign front-end, is to be reminded that PC gaming has always been the most vital, and most exciting platform on the planet.
+\item One consequence of picking and choosing missions is that you may enter scenarios without certain key technology, and have to improvise less than ideal solutions.
+\item The fun in singleplayer RTS is in figuring out the right combination of soldiers to send forward, and how best to neuter the opposition.
+\end{enumerate}
+\end{description}
+
+These results seem to be pretty good; the top 10 summaries cover most of the
+essential features of each product.
+
+\subsection{Overall}
+\subsubsection{Total Pipeline}
+Unfortunately, when all of the components come together, the results are not
+so great. One reason is that our total pipeline pulls in more reviews than in
+our testing datasets. Because of the deep parsing, this requires a lot of time
+and memory -- so much that, even when given 4GB of heap space, we could not
+complete the entire run on iPhone 4 reviews.
+
+Even when the pipeline runs to completion, the results are not so great.
+The jargon extraction seems to work well, but the summaries...
+
+Top 10 summaries for Windows 7:
+\begin{enumerate}
+\item Windows 7 Touch
+\item shortcut keys
+\item Upgrade
+\item Issues
+\item windows 7 tools
+\item Vista
+\item Windows 7 Installation
+\item Windows? 7 Internet Browsers
+\item Windows? 7 Support
+\item Windows? 7 Support
+\end{enumerate}
+
+And for Starcraft II:
+\begin{enumerate}
+\item starcraft
+  starcraft 2
+  blizzard
+  starcraft ii
+  rts
+\item blizzard ? rts ? starcraft ? starcraft 2 ? starcraft ii
+\item This is what gameplay is all about.
+\item reprint
+\item Once bitten, twice shy.
+\item HoN \$3,000 TS3:...
+\item HoN \$3,000 TS3...
+\item @aldeeXD
+\item Submitted by Philipe Mansour on Thu 17:54
+\item?Reviews Home?PC Reviews?Wii Reviews?Xbox 360 Reviews?PS3 Reviews?PS2 Reviews?PSP Reviews?Write a Review??Games Homepage??Win Free Games??Latest Winners??Hall of Fame??See Who's Online??Update Your Profile??Free Website??Fun Email Addresses??Dial-Up Internet??Broadband Deals??Broadband Speed Test
+\end{enumerate}
+
+It is clear that we have major difficulty in choosing which sentences from a
+webpage are actually useful.
+
+\subsubsection{Given Review Text}
+
+Since it turns out that extracting review text from web pages is easily the
+hardest part of this problem, we also decided to see how the pipeline as a whole
+worked given some manually gathered review text. The comment extraction,
+jargon identification, and comment summarization mathods were all the same.
+
+For StarCraft II, we extracted the jargon:
+\begin{center}\begin{tabular}{ccc}
+	game&t&StarCraft\\
+	the campaign&the missions&new units\\
+	Blizzard&Raynor&the Zerg\\
+	Players&&
+\end{tabular}
+\end{center}
+And the reviews:
+\begin{enumerate}
+\item (Fortunately, you can play the campaign as a guest when not signed into your Battle.net account, though you won't earn any rewards that way.) And though you can indicate that you are unavailable and block other users, you cannot make yourself invisible to the players on your friends list if you aren't in a social mood
+\item Many of these achievements are only pointed out after the mission ends, which might have some people hitting the replay button right away, but usually you can guess what the achievement might be from the in-game communications.But even if the achievements don't appeal to you, the game is still difficult to put a time frame to because there are so many ways to play, and while they might be radically different, there is no wrong way
+\item Frequently in RTS games, gamers will find something- usually just a minor thing or two- that they wish they could do but can't
+\item It isn't perfect, but StarCraft II: Wings of Liberty offers one of the best games in the real-time strategy genre ever made.For those that have expunged the original's story after so many years having passed, here's a brief recap
+\item If you come in without any hype, you will likely be impressed.No More LAN Parties?Despite how good the game is, there are two noticeable problems with StarCraft II, and while both are understandable, it is hard to be enthusiastic about either
+\item The result is a gameplay style that will immediately feel familiar to fans of the genre, and yet still feel fresh and new as well
+\item You closely follow brooding freedom fighter Jim Raynor as he struggles to fight off the threat of the alien Zerg race, topple the manipulative Emperor Mengsk from his throne, and come to terms with his own guilt over the fate of Sarah Kerrigan
+\item We were using a Maingear eX-L 17 computer for the review, which might be a bit of an overkill, but most systems shouldn't have much trouble running the game near its peak output.The sound is also top notch, and little things like the jukebox in the cantina will frequently play songs that are original to the game, including one that talks about shooting Zerg
+\item Which, it turns out, is all kinds of fun.Most of StarCraft II's stories end with a choice of finales
+\item StarCraft II is practically essential
+\end{enumerate}
+The results are obviously better, but still not perfect. Our jargon is passable,
+but not particularly great. We also sometimes have difficulty in splitting
+apart sentences. Also, our summaries are not exactly the best, even if they
+are now at least coherent.
+
+Since parsing takes so long, we also tried out a simplified architecture in
+which no parsing was done at all. This was basically just the comment extraction
+(with no parsing), fed directly into the summarization results. Since jargon
+extraction was not run, we have no jargon results to report.
+The results, also for StarCraft II:
+\begin{enumerate}
+\item To give away more would do a disservice to fans who have been waiting for the campaign, but suffice to say they should be happy with the depth of both the characters and the storyline.CampaignThe campaign follows the Terrans though a series of branching storylines that allow you to choose which order you want to play through, as well as giving you the occasional choice that will force you to side with one group or another
+\item Many of these achievements are only pointed out after the mission ends, which might have some people hitting the replay button right away, but usually you can guess what the achievement might be from the in-game communications.But even if the achievements don't appeal to you, the game is still difficult to put a time frame to because there are so many ways to play, and while they might be radically different, there is no wrong way
+\item Every unit feels useful, every move has an impact
+\item Optional objectives in missions call for the collection of Protoss or Zerg research items, which can then be turned in between stages for even more upgrades
+\item Blizzard has promised that the Zerg and the Protoss campaigns are coming soon, but both will require purchase
+\item Element of choice gives campaign lots of replay value
+\item It's not just in their barks and responses to being clicked on
+\item The results are fascinating, and a near perfect training ground for online
+\item Eventually the entirety of the game's options and locations are unlocked, letting you flip around to different areas of the ship to talk to major characters or purchase upgrades
+\item The structure of the campaign provides a strong argument for playing the entire thing from the beginning all over again or, at least, from an early save game
+\end{enumerate}
+
+Surprisingly, these results may be even better. This probably has something to
+do with the simplistic way we use the extracted jargon, which is to only
+consider comments that include detected jargon. It may be that the excluded
+comments would serve an important function in constructing the similarity
+graph.
+
 \section{Future Work}
 
 A major problem with the current implementation is that it is slow and memory-
@@ -165,11 +362,11 @@ semantic analysis.
 
 \section{Conclusion} % (fold)
 
-
+LexRank is magic.
 
 % section Conclusion (end)
 
-\tocsection
+% \tocsection
 \bibliographystyle{acm}
 \bibliography{refs}
 \end{document}

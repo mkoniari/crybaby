@@ -88,7 +88,7 @@ The important thing to note in this parse tree is that the subtree containing th
 \subsection{Complaint Extraction} % (fold)
 
 Given the text extracted from the web page, a list of sentences is produced by
-splitting the output text at significant punctation marks (namely, periods,
+splitting the output text at significant punctuation marks (namely, periods,
 exclamation marks, and question marks) followed by whitespace.
 
 To aid in removal of advertising phrases, every sentence not having a verb
@@ -103,13 +103,13 @@ the need for this time-consuming task.
 \subsection{Summarization} % (fold)
 
 Initially, we tried to do comment summarization using a k-means clustering
-algorithm. This involed transforming each comment into a bag-of-words feature
+algorithm. This involved transforming each comment into a bag-of-words feature
 vector and alternating the estimation of each cluster center with the
 estimation of which cluster each comment belonged to. This approach, as
 expected, did not work so well. We replaced it with a much more sophisticated
 system.
 
-Our summarization implentation is based on the LexRank algorithm.
+Our summarization implementation is based on the LexRank algorithm.
 This involves creating a similarity graph between input comments;
 we use the standard idf-modified cosine similarity metric. The
 graph edges are then binarized via a similarity threshold. Finally,
@@ -177,7 +177,7 @@ sets that were used for the full pipeline tests. This is probably because the
 top results, and the most professionals ones, were the ones selected for
 individual testing. While relatively few advertisement texts were inadvertently
 added, text that represented headers or sidebar links was included in the
-extracted comments which ended up confusing the clusterer at the end instead of
+extracted comments which ended up confusing the summarizer at the end instead of
 being ignored due to nonsimilarity.
 
 It also appears that the heuristic of searching for user-generated comments on
@@ -326,7 +326,7 @@ webpage are actually useful.
 Since it turns out that extracting review text from web pages is easily the
 hardest part of this problem, we also decided to see how the pipeline as a whole
 worked given some manually gathered review text. The comment extraction,
-jargon identification, and comment summarization mathods were all the same.
+jargon identification, and comment summarization methods were all the same.
 
 For StarCraft II, we extracted the jargon:
 \begin{center}\begin{tabular}{ccc}
@@ -408,8 +408,9 @@ structures between these sites to improve accuracy of comment extraction and
 achieve better overall accuracy.
 
 In addition, a major avenue of research would be to try to integrate some
-semantic analysis, especially at the clustering end to avoid clustering similar
-sentences that involve like and dislike into the same cluster.
+semantic analysis, especially at the summarization end to avoid clustering
+similar sentences that involve like and dislike (sentimental opposites) into
+the same cluster.
 
 % section Results (end)
 

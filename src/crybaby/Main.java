@@ -71,7 +71,8 @@ public final class Main {
 	private static class JargonThread implements Runnable {
 		public void run() {
 			JargonExtractor extractor = new JargonExtractor();
-			while (!finished) {
+			System.out.println(sentences.size() + " sentences to look at.");
+			while (!sentences.isEmpty()) {
 				try {
 					ParseSentence p = sentences.poll(1, TimeUnit.SECONDS);
 					if (p == null)
@@ -107,7 +108,7 @@ public final class Main {
 		for (String query : queries) {
 			try {
 				query = query.replace("%s", product);
-				resultPages.addAll(searcher.searchResults(query, 10));
+				resultPages.addAll(searcher.searchResults(query, 100));
 			} catch (Throwable e) {
 				System.err.println("Error searching for " + query + ":");
 				e.printStackTrace(System.err);
@@ -140,13 +141,13 @@ public final class Main {
 		System.out.println("Summarizing results...");
 		List<String> strings = new LinkedList<String>();
 		for (String s : results) {
-			/*boolean good = false;
+			boolean good = false;
 			for (String phrase : jargon)
 				if (s.contains(phrase)) {
 					good = true;
 					break;
 				}
-			if (good)*/
+			if (good)
 				strings.add(s);
 		}
 		System.out.println("Output strings: " + strings);

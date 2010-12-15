@@ -32,6 +32,15 @@ opinions for the user to see.
 
 \section{How It Works} % (fold)
 
+CRYBABY is written using Java and consists of four main components arranged in
+a pipeline fashion. The user types in a product on the command line, and the
+software will find relevant reviews on the internet and then extract the text
+of the reviews. After that, the text is passed to both the complaint extractor
+and the jargon extractor to find complaints and jargon, respectively. Then the
+complaints are filtered using the results of the jargon extractor. Afterwards,
+the resulting complaints are passed into the summarizer to determine the best
+summary of all of these complaints.
+
 \subsection{Web Scraping} % (fold)
 
 Web scraping is performed in two stages. First, the page is turned into an HTML
@@ -158,6 +167,24 @@ Our data for testing CRYBABY was a large quantity of reviews for three products:
 
 \subsection{Comment Extraction Results}
 
+When the comment extractor was run by itself on a few webpages, it seemed to
+work well. As expected, it removed syntax that was only solely limited to eye
+candy in the web browser and retained the pertinent parts of the review.
+
+However, in retrospect, the pages on which the comment extractor by itself
+worked the best appears to have been a very unrepresentative sample of the data
+sets that were used for the full pipeline tests. This is probably because the
+top results, and the most professionals ones, were the ones selected for
+individual testing. While relatively few advertisement texts were inadvertently
+added, text that represented headers or sidebar links was included in the
+extracted comments which ended up confusing the clusterer at the end instead of
+being ignored due to nonsimilarity.
+
+It also appears that the heuristic of searching for user-generated comments on
+review sites as well was a move that backfired: a lot of the sentences that
+proved hard to parse were of this form and ended up poorly being split into
+multiple sentences.
+
 \subsection{Jargon Identification Results} % (fold)
 
 The jargon identification segment of the program works quite well.  The results for the iPhone 4 are shown below:\\\begin{center}\begin{tabular}{cccc}
@@ -248,6 +275,13 @@ so great. One reason is that our total pipeline pulls in more reviews than in
 our testing datasets. Because of the deep parsing, this requires a lot of time
 and memory -- so much that, even when given 4GB of heap space, we could not
 complete the entire run on iPhone 4 reviews.
+
+Additionally, the time to run a single dataset is prohibitive; the iPhone 4
+review set took 84 minutes before crashing due to a lack of memory, while the
+Windows 7 review took 69 minutes. Timing for the Starcraft II reviews is
+estimated at around an hour, although it should be noted that it collected
+twice the review counts as the others, probably due to fewer page results being
+scrapable.
 
 Even when the pipeline runs to completion, the results are not so great.
 The jargon extraction seems to work well, but the summaries...
@@ -348,9 +382,21 @@ graph.
 
 A major problem with the current implementation is that it is slow and memory-
 inefficient. It had been intended to improve efficiency by parallelizing the
-process, but it turns out that the libraries used were not thread-safe. More
+process, but it turns out that the libraries used were not thread-safe. If it
+takes an hour to go through merely 50 reviews (which may be too unrepresentative
+a sample), then it is probably too slow to be a useful service. While the
+extraction of complaints can be easily done in parallel, the jargon and
+summarizer components are currently very serial in implementation, which
+indicates that the biggest bottleneck would be the amount of text to be passed
+into the later components. For scalability, then, the best approach would be to
+make the complaint extraction's output as clean as possible to reduce the
+serial workload and improve speed.
+
+More
 work needs to be done on finding ways to improve the accuracy of results
-without relying on deep syntactic parsing of most of the page contents.
+without relying on deep syntactic parsing of most of the page contents. Results
+have also indicated that the identified sentences are not easily parsed, which
+offers more reasons to avoid deep syntactic parsing.
 
 Additionally, the search algorithm to find reviews is pretty na\"{\i}ve,
 relying on the correctness of a particular search engine to find anything at
@@ -358,16 +404,25 @@ all. A better implementation should in addition to (or perhaps in lieu of) the
 search results attempt to find reviews on well-known sites, whether customer
 review sites of retailers, gathering reviews from social media, or using a
 database of major review sites. Furthermore, the parser could leverage similar
-structures between these sites to improve accuracy of findings.
+structures between these sites to improve accuracy of comment extraction and
+achieve better overall accuracy.
 
 In addition, a major avenue of research would be to try to integrate some
-semantic analysis.
+semantic analysis, especially at the clustering end to avoid clustering similar
+sentences that involve like and dislike into the same cluster.
 
 % section Results (end)
 
 \section{Conclusion} % (fold)
 
-LexRank is magic.
+If all of the input data was well-structured and clean, it seems likely that
+CRYBABY would produce good results. Unfortunately, it is the extraction of data
+from the unstructured web that appears to have the worst results, and the
+results appear bad enough to spoil the total results of the pipeline. Future
+extensions should therefore focus on improving this part of the pipeline first.
+However, the results also appear to validate the general approach to automating
+complaint summarization across the web, once the problems with complaint
+extraction are solved.
 
 % section Conclusion (end)
 

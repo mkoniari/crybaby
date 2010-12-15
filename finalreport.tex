@@ -1,0 +1,175 @@
+\documentclass{article}
+\usepackage{tocbibind, url}
+\usepackage{amsmath,amssymb,amsopn,amsthm}
+\title{CRYBABY --- Final Report}
+\author{Ashwin Bhat, Joshua Cranmer, Matt Greenland}
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{Introduction} % (fold)
+
+If you're a consumer who is thinking about a new purchase, it can be hard to 
+discern how your prospective purchase actually performs given the massive 
+amount of reviews on it. Likewise, if you're the person making the product, 
+you want to know what issues people are having with it so you can fix them 
+(the issues, not the people).  CRYBABY is a system that attempts to solve 
+both of these problems by finding common criticisms and complaints about 
+products.
+
+% section Introduction (end)
+
+\section{What It Does} % (fold)
+
+Our system, in its ideal form, involves a user entering the name of a product 
+into a text field.  CRYBABY then fetches reviews from several websites for 
+the product and parses them.  It then finds the keywords and jargon for the 
+product and extracts comments and complaints about the keyword terms from the 
+reviews.  Lastly, it summarizes the complaints and displays the aggregated 
+opinions for the user to see.
+
+% section What It Does (end)
+
+\section{How It Works} % (fold)
+
+\subsection{Web Scraping} % (fold)
+
+Web scraping is performed in two stages. First, the page is turned into an HTML
+tree via the Validator.nu HTML parser (a parser found in a common browser
+implementation). After that, the tree is filtered to remove unwanted portions
+of the page. The resulting tree is then serialized into a text string which is
+fed to later components.
+
+The filtering is currently performed by attempting to find a main content node
+and using that as the sole data to be output. In addition, certain known bad
+nodes (such as script elements) are removed from the tree. Plans had been made
+to leverage an existing API that performs a more thorough cleansing of the page,
+but these were dropped due to time constraints.
+
+
+% subsection Web Scraping (end)
+
+\subsection{Jargon Identification} % (fold)
+
+For the jargon identification segment, we used the Stanford Parser to extract noun phrases from reviews.  Because product features tend to be noun phrases, this turned out to be a very useful way of narrowing down the data.  This approach is detailed in \cite{opine}.  Instead of comparing noun phrases by na\"ive string equivalence, we created a bag-of-words set from the words in each noun phrase.  From there, we compared these sets using a similarity function:\begin{align*}
+	\text{similarity}(A,B) &= \frac{|A\cap B|}{|A\cup B|}.
+\end{align*}  This metric proved to be very effective, since it works well with small and large sets alike.
+
+The jargon identification algorithm parses the reviews and compares all of the noun phrase sets to one another.  It groups similar sets together and ranks groups of similar sets by quantity.  That is, the top ranked noun phrases are the ones that appear most frequently in reviews.  The algorithm then eliminates all noun phrases appearing less than a predefined threshold number of times.
+
+This approach had three major issues.  The first was that the most common noun phrases tend to be pronouns, since reviewers tend to write ``I'' and ``you'' very often in their reviews.  To overcome this, we added a list of stop words to omit from the jargon identification entirely.  By doing this, most of the unneeded noun phrases were eliminated right away.  The second issue with this approach was the problem of long noun phrases.  Some reviews tend to several key features in one sentence, as in ``I liked the screen, the apps, and the call quality.''  The approach described above would consider the noun phrase ``the screen, the apps, and the call quality'' to be a very important feature, since it has similarity with every noun phrase involving any of the three features in the list.  Overcoming this issue required examining the parse tree for noun phrases of this sort: \begin{verbatim}
+	(ROOT
+	  (S
+	    (NP (PRP I))
+	    (VP (VBD liked)
+	      (NP
+	        (NP (DT the) (NN screen))
+	        (, ,)
+	        (NP (DT the) (NNS apps))
+	        (, ,)
+	        (CC and)
+	        (NP (DT the) (NN call) (NN quality))))
+	    (. .)))
+\end{verbatim} The important thing to note in this parse tree is that the subtree containing the list of features contains over 20 nodes.  Almost always, a key feature of a product will not be more than two or three words, which would typically mean no more than five nodes in the noun phrase subtree.  We modified the jargon identification algorithm to only consider noun phrases with at most five nodes in the tree, and this tweak eliminated all of the long noun phrase issues.  The third issue is the problem of synonyms.  With the iPhone 4, for example, reviewers use the terms ``apps'' and ``applications'' interchangeably, but this approach would consider them separate features.  We do not currently have an elegant workaround for this issue, and are instead using a hard-coded list of synonymous terms.
+
+% subsection Jargon Identification (end)
+
+\subsection{Complaint Extraction} % (fold)
+
+Given the text extracted from the web page, a list of sentences is produced by
+splitting the output text at significant punctation marks (namely, periods,
+exclamation marks, and question marks) followed by whitespace.
+
+To aid in removal of advertising phrases, every sentence not having a verb
+phrase is excluded from further analysis. This process currently requires the
+use of a deep syntactic parse tree (the same one that is fed into the jargon
+extractor, in fact); it is hoped that a more thorough cleanser could eliminate
+the need for this time-consuming task.
+
+
+% subsection Complaint Extraction (end)
+
+\subsection{Summarization} % (fold)
+
+
+
+% subsection Summarization (end)
+
+% section How It Works (end)
+
+\section{Data Gathering} % (fold)
+
+Our data for testing CRYBABY was a large quantity of reviews for three products:  the iPhone 4, Windows 7, and StarCraft II.  Some of these reviews were from professional sources, such as Ars Technica and Engadget, while others were from Amazon.  We manually made a list of all of the sentences containing opinions about a product's key feature.  To do this, we also had to make our own list of key features for each product.  For example, with the iPhone 4, the key features we listed were:\\\begin{center}\begin{tabular}{ccc}
+	AT\&T&Apple&apps\\
+	Facetime&retina display&physical design\\
+	dropped call&call quality&image quality\\
+	audio quality&system performance&battery life\\
+	folders&reception&signal\\
+	camera&antenna&bumper\\
+	death grip&tethering&
+\end{tabular}\end{center}
+
+% section Testing (end)
+
+\section{Results} % (fold)
+
+\subsection{Jargon Identification Results} % (fold)
+
+The jargon identification segment of the program works quite well.  The results for the iPhone 4 are shown below:\\\begin{center}\begin{tabular}{cccc}
+	Apple&This phone&my iPhone&4\\
+	Apps&3G&Video playback&call\\
+	Talk time&Digital Camera&FaceTime&device\\
+	Documentation&five emails&the day&Battery\\
+	Photos&problems&Display&iPhone users\\
+	Screen sensitivity&a feature&People&AT\&T
+\end{tabular}
+\end{center}
+Overall, these results are good.  There are clearly still some issues with not acknowledging that ``phone,'' ``iPhone,'' and ``4'' are referring to the same thing.  Also, phrases like ``five emails'' are included rather than simply ``email'' because the algorithm still has trouble determining which way of stating a noun phrase is the preferred way.  Lastly, terms like ``the day'' and ``people'' are not useful extractions at all.
+The results for Windows 7 are shown below:\\\begin{center}\begin{tabular}{ccc}
+	Windows 7&Windows Vista&Microsoft\\
+	apps&HomeGroups&Windows XP\\
+	an OS&File Management&users\\
+	Device Management&its Taskbar&System Tray\\
+	compelling features&A version&software installers\\
+	higher driver&the icons&your computer\\
+	a time&UAC&new PCs\\
+	hardware&the network&Libraries\\
+	the screen&support&your desktop\\
+	a bit&Home Premium&one-click access
+\end{tabular}
+\end{center}
+These results are also very promising.  Almost all of the terms are important details about Windows 7, if one considers comparisons to Windows XP and Windows Vista to be important details in a review.
+
+% subsection Jargon Identification Results (end)
+
+\section{Future Work}
+
+A major problem with the current implementation is that it is slow and memory-
+inefficient. It had been intended to improve efficiency by parallelizing the
+process, but it turns out that the libraries used were not thread-safe. More
+work needs to be done on finding ways to improve the accuracy of results
+without relying on deep syntactic parsing of most of the page contents.
+
+Additionally, the search algorithm to find reviews is pretty na\"{\i}ve,
+relying on the correctness of a particular search engine to find anything at
+all. A better implementation should in addition to (or perhaps in lieu of) the
+search results attempt to find reviews on well-known sites, whether customer
+review sites of retailers, gathering reviews from social media, or using a
+database of major review sites. Furthermore, the parser could leverage similar
+structures between these sites to improve accuracy of findings.
+
+In addition, a major avenue of research would be to try to integrate some
+semantic analysis.
+
+% section Results (end)
+
+\section{Conclusion} % (fold)
+
+
+
+% section Conclusion (end)
+
+\tocsection
+\bibliographystyle{acm}
+\bibliography{refs}
+\end{document}

@@ -1,0 +1,116 @@
+\documentclass{article}
+\usepackage{tocbibind, url}
+\title{CRYBABY -- Milestone 1 Report}
+\author{Ashwin Bhat, Joshua Cranmer, Matt Greenland}
+\begin{document}
+\maketitle
+\tableofcontents
+% Okay guys, let's work ALL TOGETHER on this!
+\section{Summary}
+CRYBABY --- which we have still yet to determine a suitable acronym for --- is a
+system which will identify and summarize common complaints about commercial
+products. If common complaints are easy to find, manufacturers could more
+easily know what to remedy in later versions of their products.
+
+\section{Goals}
+% Is a list here appropriate? I dunno.
+\begin{enumerate}
+\item Crawl the web for reviews (both professional reviews and user reviews)
+\item Extract complaints (or, more generally, expressions of strong opinion)
+from these reviews
+\item Summarize these complaints
+\item Present the results in an understandable fashion
+\item Do all of this while maintaining the illusion of competence
+\end{enumerate}
+
+\section{Related Research}
+% Oh man Joshua and Ashwin should put some research here if they have any.
+Our jargon extraction method uses a mixture of the approaches described in the OPINE system \cite{opine} and the LexRank system \cite{lexrank}.  In the area of comment summarization, we plan to heavily draw from the
+architecture of LexRank.
+
+\section{Architecture}
+Our original architecture proposal had a four-part architecture:
+\begin{enumerate}
+\item Crawl the web for reviews, and classify them by type of review
+(blog post, professional review, store review, etc.)
+\item Identify product-specific jargon and its connotations
+\item Using these, extract comments from the reviews
+\item Summarize these comments and present the summary as output
+\end{enumerate}
+
+So far, we feel our basic architecture is sound, although we have run into a
+few issues with actually getting reviews and extracting jargon, and we are
+considering a reduction in scope to help deal with these issues.
+% It would be nice to get some more detail about the problems, and how we plan
+% to reduce the scope.
+
+\section{Progress}
+Initial progress is well underway for the web crawling portion of the project.  
+Already, we can successfully grab the top N results for any search query, and
+we are capable of extracting the full text content of any web page.  Web page
+parsing is done using the Validator.nu HTML Parser, which is the same parser
+algorithm that is used in the Gecko layout engine (i.e., Firefox).
+
+To extract the comments from the web results, we plan to omit the sidebars
+found on most web pages and focus entirely on the main content section, also
+excluding advertisements.  To do this, we have extracted a list of all classes
+and ids found in one of our search queries, and we are in the midst of using
+this to prepare a set of filtering algorithms to omit the portions of text that
+we can safely ignore.
+
+For the jargon/feature extraction segment of the project, we are using the 
+Stanford Parser to extract noun phrases from reviews.  Because features of 
+items tend to be noun phrases, we believe that this is a reasonable starting 
+point for extraction.  This approach is detailed in \cite{opine}.  Instead of 
+comparing noun phrases by na\" ive string equivalence, we create a bag-of-words 
+set from the words in each noun phrase.  From there, we compare bags of words 
+by set intersection size and cluster similar bags together, though we plan to 
+improve this by using a better form of clustering, such as the method detailed 
+in \cite{lexrank}.  One issue with this approach is that stop words, such as 
+articles and prepositions, throw off the clustering.  We counter this by not 
+adding any stop words to the bags of words.  We are using an extended version 
+of the stop word list from \url{http://www.webconfs.com/stop-words.php}.  To 
+get the specific features of the reviews, we simply select every bag-of-word 
+cluster with an occurrence count above a threshold.  Currently this approach 
+seems to be extracting correct features, though there are still some incorrect 
+extractions 
+
+
+Assuming that the best solution is the simplest solution that works, we have
+written a small $k$-means\texttt{++} clusterer as the core of our comment 
+summarizer.  We represent each comment as a simple bag-of-words, and choose the 
+initial points using the $k$-means\texttt{++} initialization scheme, where each 
+new mean is chosen with probability proportional to the squared distance from 
+the last mean chosen.  Once we've clustered the comments, we choose one 
+representative comment for each cluster; in our current scheme, we just choose 
+the comment whosebag-of-words is closest in vector-space to its cluster's mean.
+Initial results from this, though, have proved disappointing --- results are 
+largely dependent on getting a good random initialization --- and we plan to 
+replace this with a more complex system that is hopefully more capable.
+
+For the evaluation data, we have started collecting the sets of reviews to be
+used.  However, we have not yet started the process of manually labelling this
+data to ascertain our accuracy.
+
+\section{Proposed Experiments}
+The problem of extracting features is a somewhat open-ended one.  To test the 
+quality of features extracted, we plan to make a list of expected features of 
+each product.  We will compare the features learned to the expected features to 
+get an idea of the accuracy of the extractor.  Some reviews, however, may bring 
+up aspects of products that people do not often consider, and because we do not 
+have extensive knowledge of the details of every product category, examining 
+the output ourselves will be necessary to get a full understanding of the 
+quality of our extractor.
+% I dunno what you guys are doing, but this is what I'm doing.
+
+We also plan to try replacing our dumb $k$-means clusterer with a more
+intelligent system based on graph centrality, based on the framework presented
+by the LexRank system. Furthermore, we plan on integrating WordNet (or possibly
+SentiWordNet) into the system to provide a better method of assessing comment
+similarity by considering synonym/antonym pairs, and hierarchical concept
+relationships.
+
+\tocsection
+\bibliographystyle{plain}
+\bibliography{refs}
+\end{document}

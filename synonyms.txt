@@ -1,0 +1,3 @@
+email,e-mail,mail,emails,mails
+app,application,apps,applications
+wi-fi,wifi

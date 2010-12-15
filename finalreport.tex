@@ -107,6 +107,25 @@ Our data for testing CRYBABY was a large quantity of reviews for three products:
 
 
 
+\section{Future Work}
+
+A major problem with the current implementation is that it is slow and memory-
+inefficient. It had been intended to improve efficiency by parallelizing the
+process, but it turns out that the libraries used were not thread-safe. More
+work needs to be done on finding ways to improve the accuracy of results
+without relying on deep syntactic parsing of most of the page contents.
+
+Additionally, the search algorithm to find reviews is pretty na\"{\i}ve,
+relying on the correctness of a particular search engine to find anything at
+all. A better implementation should in addition to (or perhaps in lieu of) the
+search results attempt to find reviews on well-known sites, whether customer
+review sites of retailers, gathering reviews from social media, or using a
+database of major review sites. Furthermore, the parser could leverage similar
+structures between these sites to improve accuracy of findings.
+
+In addition, a major avenue of research would be to try to integrate some
+semantic analysis.
+
 % section Results (end)
 
 \section{Conclusion} % (fold)

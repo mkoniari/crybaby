@@ -8,6 +8,7 @@ import crybaby.parser.Webscraper;
 import crybaby.parser.Websearcher;
 import crybaby.summarize.CommentSummarizer;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -37,6 +38,7 @@ public final class Main {
 	private final static int NUM_THREADS = 5;
 	
 	private static Queue<String> pages, results;
+	private static List<String> jargon = Collections.synchronizedList(new LinkedList<String>());
 	private static BlockingQueue<ParseSentence> sentences = new LinkedBlockingQueue<ParseSentence>();
 	
 	private static volatile boolean finished = false;
@@ -51,7 +53,10 @@ public final class Main {
 					for (ParseSentence p : extractor.getSentences()) {
 						sentences.put(p);
 					}
-					results.addAll(extractor.getText());
+					List<String> sentences = extractor.getText();
+					System.err.println("Found " + sentences.size() + " sentences for "
+						+ runner);
+					results.addAll(sentences);
 				} catch (Throwable e) {
 					System.err.println("Error loading page " + runner);
 					e.printStackTrace(System.err);
@@ -65,7 +70,6 @@ public final class Main {
 
 	private static class JargonThread implements Runnable {
 		public void run() {
-			System.out.println("Running!");
 			JargonExtractor extractor = new JargonExtractor();
 			while (!finished) {
 				try {
@@ -77,11 +81,10 @@ public final class Main {
 			}
 			System.out.println("Finding jargon terms...");
 			extractor.removeSimilarity();
-			// pages is empty now, reuse it
 			for (NPWordBag bag : extractor.getWordBags()) {
 				if (bag.getSimilars() < 5)
 					break;
-				pages.add(bag.getNounPhrase());
+				jargon.add(bag.getNounPhrase());
 			}
 		}
 	}
@@ -104,7 +107,7 @@ public final class Main {
 		for (String query : queries) {
 			try {
 				query = query.replace("%s", product);
-				resultPages.addAll(searcher.searchResults(query, 100));
+				resultPages.addAll(searcher.searchResults(query, 10));
 			} catch (Throwable e) {
 				System.err.println("Error searching for " + query + ":");
 				e.printStackTrace(System.err);
@@ -116,23 +119,29 @@ public final class Main {
 		System.out.println("Parsing reviews...");
 		pages = new ConcurrentLinkedQueue<String>(resultPages);
 		results = new ConcurrentLinkedQueue<String>();
-		ThreadGroup group = new ThreadGroup("Parsers");
+		/*ThreadGroup group = new ThreadGroup("Parsers");
 		Thread[] threads = new Thread[NUM_THREADS];
 		for (int i = 0; i < NUM_THREADS; i++) {
 			threads[i] = new Thread(group, new Scraper());
 			threads[i].start();
-		}
-		Thread jargonThread = new Thread(new JargonThread());
+		}*/
+		new Scraper().run();
+		/*Thread jargonThread = new Thread(new JargonThread());
 		jargonThread.start();
-		jargonThread.join();
+		jargonThread.join();*/
+		new JargonThread().run();
+		
+		// Wait for other threads to finish...
+		// Maybe we'll clean up a lot of memory!
+		/*for (int i = 0; i < NUM_THREADS; i++)
+			threads[i].join();*/
 		
 		// Output review comments
 		System.out.println("Summarizing results...");
-		List<String> phrases = new LinkedList<String>(pages);
 		List<String> strings = new LinkedList<String>();
 		for (String s : results) {
 			/*boolean good = false;
-			for (String phrase : phrases)
+			for (String phrase : jargon)
 				if (s.contains(phrase)) {
 					good = true;
 					break;
@@ -141,11 +150,11 @@ public final class Main {
 				strings.add(s);
 		}
 		System.out.println("Output strings: " + strings);
-		System.out.println("Jargon phrases: " + phrases);
+		System.out.println("Jargon phrases: " + jargon);
 		CommentSummarizer summarizer = new CommentSummarizer(strings);
 		List<String> finalResults = summarizer.summarize();
 		System.out.println("Final summary strings:");
 		for (String s : finalResults)
-			System.out.println(s);		
+			System.out.println(s);
 	}
 }
